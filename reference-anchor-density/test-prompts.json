@@ -1,0 +1,15 @@
+{
+  "skill": "reference-anchor-density",
+  "version": "0.1.0",
+  "source_book": "影视飓风 AI 实战课 — Tim",
+  "darwin_compatible": true,
+  "test_cases": [
+    {"id":"should-trigger-01","type":"should_trigger","prompt":"同一个机器人要出现在 6 个镜头里，正侧背都不能变，我该准备什么参考？","expected_behavior":"列身份高风险项，准备多视图并先做一致性小样。","notes":"角色一致性"},
+    {"id":"should-trigger-02","type":"should_trigger","prompt":"我想做产品 360 度环绕，单张正面图够吗？","expected_behavior":"解释高保真运动需要多角度或端帧锚点。","notes":"多角度保真"},
+    {"id":"should-trigger-03","type":"should_trigger","prompt":"人物子弹时间细节一直崩，如何减少 AI 猜测？","expected_behavior":"增加真实角度、关键帧与细节锚点。","notes":"复杂主体"},
+    {"id":"should-not-trigger-01","type":"should_not_trigger","prompt":"只把这条视频的背景改成沙漠，动作和构图不变。","expected_behavior":"不应优先激活本技能，应激活 preserve-change-edit-contract。","notes":"兄弟技能诱饵"},
+    {"id":"should-not-trigger-02","type":"should_not_trigger","prompt":"我有视频和图片，应该让哪一个控制运镜？","expected_behavior":"不应优先激活本技能，应激活 generation-mode-reference-selection。","notes":"模态诱饵"},
+    {"id":"edge-01","type":"edge_case","prompt":"我做抽象水墨动画，角色每次略有变化也没关系，需要三视图吗？","expected_behavior":"不应强加高密度锚点，应说明容错高时少锚点更适合探索。","notes":"创意容错边界"}
+  ],
+  "minimum_pass_rate": 0.8
+}

@@ -1,0 +1,16 @@
+# 原始课程素材不属于本公开仓库
+*.mp4
+*.mov
+*.mkv
+*.avi
+*.webm
+*.mp3
+*.wav
+*.m4a
+*.srt
+*.zip
+
+# 本地转写和临时导出
+transcripts/
+raw/
+temp/

@@ -1,0 +1,15 @@
+{
+  "skill": "capability-cost-fit",
+  "version": "0.1.0",
+  "source_book": "影视飓风 AI 实战课 — Tim",
+  "darwin_compatible": true,
+  "test_cases": [
+    {"id":"should-trigger-01","type":"should_trigger","prompt":"我要先试 20 个包装概念，最后只交一张印刷级主视觉，怎么分配模型和预算？","expected_behavior":"先低成本发散、再把少数方向升到高保真交付档。","notes":"两档预算"},
+    {"id":"should-trigger-02","type":"should_trigger","prompt":"做人物替换时，便宜模型总改不准；我该不该升级？","expected_behavior":"按局部编辑能力是否改善关键失败风险判断升级。","notes":"能力匹配"},
+    {"id":"should-trigger-03","type":"should_trigger","prompt":"做 100 张社媒草图应该用最贵的模型吗？","expected_behavior":"识别探索任务，建议最小足够档位和抽样升级。","notes":"成本权衡"},
+    {"id":"should-not-trigger-01","type":"should_not_trigger","prompt":"我有图片、视频和音频，分别应该控制角色、动作还是节拍？","expected_behavior":"不应激活本技能，应激活 generation-mode-reference-selection。","notes":"兄弟技能诱饵"},
+    {"id":"should-not-trigger-02","type":"should_not_trigger","prompt":"怎么让两个镜头的动作接起来不卡？","expected_behavior":"不应激活本技能，应激活 sequence-continuity-assembly。","notes":"连续性诱饵"},
+    {"id":"edge-01","type":"edge_case","prompt":"高阶模型生成更漂亮，但客户只关心产品文字别错，我要怎么选？","expected_behavior":"应激活并把文字/排版正确性作为核心风险，先以小样验证高阶是否真有收益。","notes":"质量不等于交付正确"}
+  ],
+  "minimum_pass_rate": 0.8
+}

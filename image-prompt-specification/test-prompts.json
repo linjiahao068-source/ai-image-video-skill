@@ -1,0 +1,52 @@
+{
+  "skill": "image-prompt-specification",
+  "version": "0.1.0",
+  "source_book": "影视飓风 AI 实战课｜2-1 图片提示词 — Tim",
+  "darwin_compatible": true,
+  "test_cases": [
+    {
+      "id": "should-trigger-01",
+      "type": "should_trigger",
+      "prompt": "我想做一张赛博朋克女骑手的海报，但每次都变成动漫风。帮我把想法写成稳定的生图提示词。",
+      "expected_behavior": "应激活 image-prompt-specification，梳理时间、主体、场景、风格并先确认不可接受的动漫偏差。",
+      "notes": "从模糊意图到可控提示词。"
+    },
+    {
+      "id": "should-trigger-02",
+      "type": "should_trigger",
+      "prompt": "给我写一条白底电商耳机主图的 prompt，要突出磨砂黑材质和 45 度视角。",
+      "expected_behavior": "应激活 image-prompt-specification，保留主体/材质/角度并说明时间与场景可省略。",
+      "notes": "任务裁剪测试。"
+    },
+    {
+      "id": "should-trigger-03",
+      "type": "should_trigger",
+      "prompt": "我有一句“孤独的人站在雪山前”，还缺什么信息才能更可控？",
+      "expected_behavior": "应激活 image-prompt-specification，诊断四维中的关键缺口，不能机械要求填满全部字段。",
+      "notes": "提示词诊断测试。"
+    },
+    {
+      "id": "should-not-trigger-01",
+      "type": "should_not_trigger",
+      "prompt": "这张参考照片的光线、构图和人物服装分别是什么？帮我反推一条相近提示词。",
+      "expected_behavior": "不应优先激活本 skill，应激活 reference-image-prompt-reverse-engineering，因为输入是具体参考图。",
+      "notes": "跨 skill 混淆诱饵。"
+    },
+    {
+      "id": "should-not-trigger-02",
+      "type": "should_not_trigger",
+      "prompt": "Midjourney 的 --ar 参数是什么意思？",
+      "expected_behavior": "不应激活本 skill；这是工具参数信息查询。",
+      "notes": "无关技术查询诱饵。"
+    },
+    {
+      "id": "edge-01",
+      "type": "edge_case",
+      "prompt": "我只想做一个极简 App 图标，还需要按照时间、主体、场景、风格全写吗？",
+      "expected_behavior": "应以精简方式激活本 skill，并明确时间和场景可省略，不应给出四维必填模板。",
+      "notes": "边界：框架是检查表，不是强制填写。"
+    }
+  ],
+  "minimum_pass_rate": 0.8,
+  "notes": "三个正向、两个诱饵和一个边界测试；诱饵容错为 0。"
+}

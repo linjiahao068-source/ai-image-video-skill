@@ -1,0 +1,52 @@
+{
+  "skill": "constraint-aware-prompt-expansion",
+  "version": "0.1.0",
+  "source_book": "影视飓风 AI 实战课｜2-1 图片提示词 — Tim",
+  "darwin_compatible": true,
+  "test_cases": [
+    {
+      "id": "should-trigger-01",
+      "type": "should_trigger",
+      "prompt": "帮我扩写这段产品主视觉提示词，但品牌蓝、圆形瓶身和白底不能变。",
+      "expected_behavior": "应激活 constraint-aware-prompt-expansion 的控制模式，先列不可变约束，再扩写并逐项验收。",
+      "notes": "高保真扩写。"
+    },
+    {
+      "id": "should-trigger-02",
+      "type": "should_trigger",
+      "prompt": "我只确定是未来城市和孤独感，想让 AI 给我 15 个完全不同的视觉方向，应该怎么设提示词？",
+      "expected_behavior": "应激活 constraint-aware-prompt-expansion 的探索模式，保留最小护栏并允许差异化发散。",
+      "notes": "创意脑暴。"
+    },
+    {
+      "id": "should-trigger-03",
+      "type": "should_trigger",
+      "prompt": "AI 扩写后图片挺漂亮，但把 70 岁老人变成了年轻人，我下一轮该怎么控制？",
+      "expected_behavior": "应激活 constraint-aware-prompt-expansion，识别为约束漂移并把年龄列为不可妥协验收项。",
+      "notes": "质量高但不合规格。"
+    },
+    {
+      "id": "should-not-trigger-01",
+      "type": "should_not_trigger",
+      "prompt": "请看这张红色跑车照片，分析它的镜头角度、环境和色调，再反推一条提示词。",
+      "expected_behavior": "不应激活本 skill，应激活 reference-image-prompt-reverse-engineering，因为任务从参考图出发。",
+      "notes": "跨 skill 混淆诱饵。"
+    },
+    {
+      "id": "should-not-trigger-02",
+      "type": "should_not_trigger",
+      "prompt": "帮我从零写一条白底保温杯电商图提示词，强调材质、颜色和 45 度视角。",
+      "expected_behavior": "不应优先激活本 skill，应激活 image-prompt-specification；用户尚未要求扩写或在控制/探索间决策。",
+      "notes": "跨 skill 混淆诱饵。"
+    },
+    {
+      "id": "edge-01",
+      "type": "edge_case",
+      "prompt": "我想让 AI 扩写我的婚礼照片创意，但人物面部、礼服颜色和场地必须保持准确，预算只够生成两次。",
+      "expected_behavior": "应以控制模式激活本 skill，先锁定约束与两次生成上限；如涉及真实人物或外部付费执行，提示先确认授权和预算。",
+      "notes": "边界：严格约束与成本上限并存。"
+    }
+  ],
+  "minimum_pass_rate": 0.8,
+  "notes": "三个正向、两个诱饵和一个边界测试；诱饵容错为 0。"
+}

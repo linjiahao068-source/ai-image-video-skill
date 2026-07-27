@@ -1,0 +1,15 @@
+{
+  "skill": "endpoint-anchored-video-synthesis",
+  "version": "0.1.0",
+  "source_book": "影视飓风 AI 实战课 — Tim",
+  "darwin_compatible": true,
+  "test_cases": [
+    {"id":"should-trigger-01","type":"should_trigger","prompt":"这段产品视频必须从关闭状态过渡到亮屏状态，结尾不能错，应该怎么给素材？","expected_behavior":"锁定首尾端点并让 AI 补中间过程。","notes":"首尾硬约束"},
+    {"id":"should-trigger-02","type":"should_trigger","prompt":"我想把 4 秒乌鸦喝水片段延长成有前因后果的故事，先往哪边延？","expected_behavior":"按叙事因果选择向前或向后延展并拆段。","notes":"前后延展"},
+    {"id":"should-trigger-03","type":"should_trigger","prompt":"怎么做一段可以无缝循环的耳机动态壁纸？","expected_behavior":"指定相同或匹配的首尾状态并验收闭环。","notes":"循环"},
+    {"id":"should-not-trigger-01","type":"should_not_trigger","prompt":"我的两个镜头动作不连，接缝还有重复帧，怎么剪？","expected_behavior":"不应优先激活本技能，应激活 sequence-continuity-assembly。","notes":"兄弟技能诱饵"},
+    {"id":"should-not-trigger-02","type":"should_not_trigger","prompt":"我要把 8 个故事事件压进 6 秒，应该拆几个镜头？","expected_behavior":"不应优先激活本技能，应激活 storyboard-event-budgeting。","notes":"分镜诱饵"},
+    {"id":"edge-01","type":"edge_case","prompt":"我只有开头图，结尾随 AI 自由发挥也行。","expected_behavior":"应采用仅首帧约束，不强制加入尾帧。","notes":"最小约束边界"}
+  ],
+  "minimum_pass_rate": 0.8
+}

@@ -1,0 +1,16 @@
+{
+  "skill": "sequence-continuity-assembly",
+  "version": "0.1.1",
+  "source_book": "影视飓风 AI 实战课 — Tim",
+  "darwin_compatible": true,
+  "supersedes": "test-prompts.json",
+  "test_cases": [
+    {"id":"should-trigger-01","type":"should_trigger","prompt":"我要把人物跑进门和门后雪山两个镜头接起来，怎么避免动作断裂？","expected_behavior":"优先动接动；若端点不连则换锚点或改用空镜。","notes":"动作转场"},
+    {"id":"should-trigger-02","type":"should_trigger","prompt":"我的 AI 转场总在接缝多停一帧，怎么处理？","expected_behavior":"检查并裁切重复端帧后再拼接。","notes":"重复帧修复"},
+    {"id":"should-trigger-03","type":"should_trigger","prompt":"我要让 8 套衣服跟着一段音乐依次展示，怎么让画面有节奏？","expected_behavior":"用音频节拍作为时间轴映射素材顺序和变化。","notes":"节拍装配"},
+    {"id":"should-not-trigger-01","type":"should_not_trigger","prompt":"我还没做任何镜头，先帮我把 20 秒故事拆成镜头和时长。","expected_behavior":"不应激活本技能，应激活 storyboard-event-budgeting。","notes":"跨技能诱饵"},
+    {"id":"should-not-trigger-02","type":"should_not_trigger","prompt":"我需要让视频从这张首帧准确结束在那张尾帧。","expected_behavior":"不应激活本技能，应激活 endpoint-anchored-video-synthesis。","notes":"跨技能诱饵"},
+    {"id":"edge-01","type":"edge_case","prompt":"我只有一个 6 秒镜头，但想在第三秒配一个音效强调动作。","expected_behavior":"不应激活本技能；应激活 video-direction-specification，在镜内定义第三秒的动作和音效落点。","notes":"修订边界"}
+  ],
+  "minimum_pass_rate": 0.8
+}

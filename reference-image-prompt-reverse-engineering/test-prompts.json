@@ -1,0 +1,52 @@
+{
+  "skill": "reference-image-prompt-reverse-engineering",
+  "version": "0.1.0",
+  "source_book": "影视飓风 AI 实战课｜2-1 图片提示词 — Tim",
+  "darwin_compatible": true,
+  "test_cases": [
+    {
+      "id": "should-trigger-01",
+      "type": "should_trigger",
+      "prompt": "请根据这张雨夜街头照片反推一条可用于生图的提示词，我想保留霓虹反光和压抑氛围。",
+      "expected_behavior": "应激活 reference-image-prompt-reverse-engineering，区分可见证据、推断和待确认项，并输出可比对提示词。",
+      "notes": "典型参考图反推。"
+    },
+    {
+      "id": "should-trigger-02",
+      "type": "should_trigger",
+      "prompt": "这张电影海报是怎么做出这种构图和光线的？我不想抄原图，只想要同类感觉。",
+      "expected_behavior": "应激活 reference-image-prompt-reverse-engineering，提炼高层特征且不承诺复刻。",
+      "notes": "相似氛围而非复制。"
+    },
+    {
+      "id": "should-trigger-03",
+      "type": "should_trigger",
+      "prompt": "AI 给了我一段图片描述，但我不确定它有没有把参考图的主体、色调和镜头说对，怎么核对？",
+      "expected_behavior": "应激活 reference-image-prompt-reverse-engineering，使用观察—不确定项—生成比对流程。",
+      "notes": "人工复核 Agent 输出。"
+    },
+    {
+      "id": "should-not-trigger-01",
+      "type": "should_not_trigger",
+      "prompt": "我想让 AI 把“复古咖啡馆里的机器人”扩成 20 个大胆不同的广告创意，越意外越好。",
+      "expected_behavior": "不应激活本 skill，应激活 constraint-aware-prompt-expansion 的探索模式；没有参考图。",
+      "notes": "跨 skill 混淆诱饵。"
+    },
+    {
+      "id": "should-not-trigger-02",
+      "type": "should_not_trigger",
+      "prompt": "帮我把这句中文翻译成英文：傍晚的竹林。",
+      "expected_behavior": "不应激活本 skill；这是翻译任务。",
+      "notes": "无关任务诱饵。"
+    },
+    {
+      "id": "edge-01",
+      "type": "edge_case",
+      "prompt": "我想完全复刻这张有品牌 Logo 的广告图，连人物和排版都不要变。",
+      "expected_behavior": "应识别为边界：可提炼非受保护的高层视觉特征，但不得承诺或协助逐像素复刻；提示版权、商标和肖像风险。",
+      "notes": "边界：复刻与权利风险。"
+    }
+  ],
+  "minimum_pass_rate": 0.8,
+  "notes": "三个正向、两个诱饵和一个边界测试；诱饵容错为 0。"
+}

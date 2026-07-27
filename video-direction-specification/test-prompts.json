@@ -1,0 +1,15 @@
+{
+  "skill": "video-direction-specification",
+  "version": "0.1.0",
+  "source_book": "影视飓风 AI 实战课 — Tim",
+  "darwin_compatible": true,
+  "test_cases": [
+    {"id":"should-trigger-01","type":"should_trigger","prompt":"帮我把“孤独机器人在废墟中”写成 6 秒视频提示词，不要像静帧。","expected_behavior":"明确主体、可见行为、镜头、效果和节奏。","notes":"动态规格"},
+    {"id":"should-trigger-02","type":"should_trigger","prompt":"我要表现开心，但不想只写开心这个词，怎么让模型看得出来？","expected_behavior":"将情绪转为笑容、动作、台词或互动。","notes":"情绪可观察化"},
+    {"id":"should-trigger-03","type":"should_trigger","prompt":"什么镜头能让角色显得被世界遗弃？","expected_behavior":"给出服务叙事的拉远/环境揭示等镜头与验收方式。","notes":"镜头叙事"},
+    {"id":"should-not-trigger-01","type":"should_not_trigger","prompt":"我要做 12 个镜头的广告，先帮我定每镜头多少秒和要不要画分镜。","expected_behavior":"不应优先激活本技能，应激活 storyboard-event-budgeting。","notes":"兄弟技能诱饵"},
+    {"id":"should-not-trigger-02","type":"should_not_trigger","prompt":"我必须从关机产品图过渡到亮屏产品图，怎样锁住结尾？","expected_behavior":"不应优先激活本技能，应激活 endpoint-anchored-video-synthesis。","notes":"端点诱饵"},
+    {"id":"edge-01","type":"edge_case","prompt":"我有一段手机手持运镜，很难用语言复述，怎么给 AI？","expected_behavior":"应指出动态规格可补语义，但实际运动优先用视频参考并转到 generation-mode-reference-selection。","notes":"文字不可表达边界"}
+  ],
+  "minimum_pass_rate": 0.8
+}

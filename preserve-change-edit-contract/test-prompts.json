@@ -1,0 +1,15 @@
+{
+  "skill": "preserve-change-edit-contract",
+  "version": "0.1.0",
+  "source_book": "影视飓风 AI 实战课 — Tim",
+  "darwin_compatible": true,
+  "test_cases": [
+    {"id":"should-trigger-01","type":"should_trigger","prompt":"只把模特的外套换成红色，脸、姿势、场景和镜头都不能变。","expected_behavior":"列出变更项与高风险保留项并按契约验收。","notes":"局部编辑"},
+    {"id":"should-trigger-02","type":"should_trigger","prompt":"把视频背景换成雨夜，但人物动作和构图必须原样保留。","expected_behavior":"将背景/天气列为变更、动作/构图列为保留。","notes":"视频换背景"},
+    {"id":"should-trigger-03","type":"should_trigger","prompt":"我改产品颜色时把标签也改坏了，下一轮怎么写？","expected_behavior":"补强保留项并进行最小修改返工。","notes":"漂移修复"},
+    {"id":"should-not-trigger-01","type":"should_not_trigger","prompt":"我想找 15 种完全不同的科幻场景，不需要保留任何元素。","expected_behavior":"不应激活本技能；这是开放发散。","notes":"无保留边界"},
+    {"id":"should-not-trigger-02","type":"should_not_trigger","prompt":"我的角色跨 8 个镜头总变脸，需要准备多少视角参考？","expected_behavior":"不应优先激活本技能，应激活 reference-anchor-density。","notes":"兄弟技能诱饵"},
+    {"id":"edge-01","type":"edge_case","prompt":"换背景时保留人物，但人物被树遮住了一半。","expected_behavior":"应说明原始证据不足，先补无遮挡锚点而非承诺完全保留。","notes":"素材质量边界"}
+  ],
+  "minimum_pass_rate": 0.8
+}

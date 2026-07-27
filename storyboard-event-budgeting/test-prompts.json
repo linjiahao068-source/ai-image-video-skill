@@ -1,0 +1,16 @@
+{
+  "skill": "storyboard-event-budgeting",
+  "version": "0.1.1",
+  "source_book": "影视飓风 AI 实战课 — Tim",
+  "darwin_compatible": true,
+  "supersedes": "test-prompts.json",
+  "test_cases": [
+    {"id":"should-trigger-01","type":"should_trigger","prompt":"我要做 15 秒香水广告：出场、闻香、环境变化、产品特写、收尾，帮我定分镜和时长。","expected_behavior":"建立事件链、镜头预算，并决定哪些镜头需要图像分镜。","notes":"广告分镜"},
+    {"id":"should-trigger-02","type":"should_trigger","prompt":"十秒里要讲小鸟找水、喝水、飞走，能一次生成吗？","expected_behavior":"评估事件负载，必要时拆段或压缩故事。","notes":"时长负载"},
+    {"id":"should-trigger-03","type":"should_trigger","prompt":"文字分镜和图像分镜到底什么时候各用哪个？","expected_behavior":"按叙事顺序与高风险视觉保真分层选择。","notes":"保真阶梯"},
+    {"id":"should-not-trigger-01","type":"should_not_trigger","prompt":"我只要一个孤独角色的 5 秒镜头，镜头怎么运动更好？","expected_behavior":"不应激活本技能，应激活 video-direction-specification。","notes":"跨技能诱饵"},
+    {"id":"should-not-trigger-02","type":"should_not_trigger","prompt":"这两个镜头已经做好了，只是动作衔接和音乐节拍不对。","expected_behavior":"不应激活本技能，应激活 sequence-continuity-assembly。","notes":"跨技能诱饵"},
+    {"id":"edge-01","type":"edge_case","prompt":"我做的是 3 秒产品 Loop，只有一个状态变化，值得画完整分镜吗？","expected_behavior":"不应激活本技能；应激活 endpoint-anchored-video-synthesis，以首尾状态计划替代完整分镜。","notes":"修订边界"}
+  ],
+  "minimum_pass_rate": 0.8
+}

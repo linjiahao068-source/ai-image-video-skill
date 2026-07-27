@@ -1,0 +1,15 @@
+{
+  "skill": "generation-mode-reference-selection",
+  "version": "0.1.0",
+  "source_book": "影视飓风 AI 实战课 — Tim",
+  "darwin_compatible": true,
+  "test_cases": [
+    {"id":"should-trigger-01","type":"should_trigger","prompt":"我有一段真人走路视频，想把人物改成武侠角色、场景改成雪山，动作和镜头不要丢，该用什么参考？","expected_behavior":"选择视频承载动作/镜头，其他输入承载角色和场景。","notes":"视频参考职责"},
+    {"id":"should-trigger-02","type":"should_trigger","prompt":"我有产品正面图、材质特写和一段音乐，想做节奏广告，三份素材各该控制什么？","expected_behavior":"为外观、材质、节拍分配明确参考职责。","notes":"多模态职责"},
+    {"id":"should-trigger-03","type":"should_trigger","prompt":"我只有文字想法，想先做图再让它动，工作流应该怎么选？","expected_behavior":"选择先文生图后图生视频的输入路径。","notes":"模式选择"},
+    {"id":"should-not-trigger-01","type":"should_not_trigger","prompt":"我已经选定图生视频，预算只够 20 次，轻量模型是否够用？","expected_behavior":"不应激活本技能，应激活 capability-cost-fit。","notes":"兄弟技能诱饵"},
+    {"id":"should-not-trigger-02","type":"should_not_trigger","prompt":"只把这张图里的瓶子改成绿色，背景和标签绝对不能变。","expected_behavior":"不应优先激活本技能，应激活 preserve-change-edit-contract。","notes":"编辑诱饵"},
+    {"id":"edge-01","type":"edge_case","prompt":"我有一张动作截图，想模仿动作，但并不在乎是否精确。","expected_behavior":"可选择图像参考作为低保真起点，并说明若动作必须准确应改用视频参考。","notes":"保真边界"}
+  ],
+  "minimum_pass_rate": 0.8
+}
