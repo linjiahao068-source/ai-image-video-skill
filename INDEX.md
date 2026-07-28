@@ -1,4 +1,4 @@
-# AI Video Production — Skill Index
+# AI Image & Video Skill Index
 
 > 本仓库由 [cangjie-skill](https://github.com/kangarooking/cangjie-skill) 蒸馏，汇集 11 个可组合的 AI 影像创作 skill。构建日期：2026-07-27。
 

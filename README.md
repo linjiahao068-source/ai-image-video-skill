@@ -1,4 +1,4 @@
-# AI Video Production Skill
+# AI Image & Video Skill
 
 一套可直接调用的 AI 影像创作技能包：将《影视飓风 AI 实战课》中可迁移的方法，蒸馏为 **11 个独立、可组合、可测试** 的 AI skill。
 
