@@ -1,0 +1,27 @@
+{
+  "skill": "build-image-fast",
+  "version": "1.0.0",
+  "scope": "八阶段确认式静态图片总控工作流",
+  "test_cases": [
+    {"id":"gate-01","type":"contract","prompt":"我想做一组股票抄底梗四格漫画，先帮我落地。","expected_behavior":"启动阶段1，输出状态栏、Creative Brief草案和不超过五项的集中补问；不得直接进入创意方向或出图。"},
+    {"id":"gate-02","type":"contract","prompt":"阶段2的三个方向里，我想把第二个方向的结尾改得更生气。","expected_behavior":"保持阶段2并生成新的concept版本；不得把修改视为确认或进入阶段3。"},
+    {"id":"gate-03","type":"contract","prompt":"确认 concept-v0.2，就采用第二个方向，锁定反转和愤怒情绪。","expected_behavior":"记录具体确认版本和锁定项，然后进入阶段3。"},
+    {"id":"rollback-01","type":"contract","prompt":"已经到提示词阶段了，但用途从朋友圈改成公开商业广告。","expected_behavior":"返回阶段1重新确认权利与平台，把阶段2至8标为待重新验证。"},
+    {"id":"generation-guard-01","type":"contract","prompt":"提示词还没确认，你先随便出一张看看。","expected_behavior":"保持阶段5并请求确认当前提示词和路线；不得调用图片生成。"},
+    {"id":"generation-guard-02","type":"contract","prompt":"确认 prompt-route-v0.3，快速路线，先生成1张。","expected_behavior":"进入阶段6并按确认方案生成；普通任务使用内置image_gen。"},
+    {"id":"candidate-01","type":"contract","prompt":"图片刚生成完，请继续。","expected_behavior":"续接阶段6候选确认，展示image版本并要求用户明确选择；不得自动进入QA。"},
+    {"id":"route-fallback-01","type":"contract","prompt":"快速路线连续两次都出现四格顺序错、文字乱码。","expected_behavior":"强制返回阶段5，切换稳定路线并把阶段6至8标为待重新验证。"},
+    {"id":"qa-01","type":"contract","prompt":"候选总分88，但第二格把买入后下跌画成了上涨，可以交付吗？","expected_behavior":"判定存在因果或领域语义硬失败，不得交付；映射到对应返修或上游阶段。"},
+    {"id":"qa-02","type":"contract","prompt":"QA 84分，没有其他硬失败，我觉得也够了。","expected_behavior":"保持阶段7需返工；默认门槛为85且不能自动降低。"},
+    {"id":"delivery-01","type":"contract","prompt":"Build Pack已经写好，但我还没检查最终文件。","expected_behavior":"阶段8保持待确认，不得把项目标为已完成。"},
+    {"id":"delegate-prompt-01","type":"should_not_trigger","prompt":"只帮我把这条海报提示词写得更稳定，不需要出图。","expected_behavior":"交给image-prompt-specification，不启动八阶段总控。"},
+    {"id":"delegate-reference-01","type":"should_not_trigger","prompt":"只分析这张参考图并反推提示词。","expected_behavior":"交给reference-image-prompt-reverse-engineering。"},
+    {"id":"delegate-cost-01","type":"should_not_trigger","prompt":"只比较这两个图片模型的速度和成本。","expected_behavior":"交给capability-cost-fit。"},
+    {"id":"delegate-edit-01","type":"should_not_trigger","prompt":"只把现有图片背景改成夜景，人物完全不变。","expected_behavior":"交给preserve-change-edit-contract和图片编辑路径。"},
+    {"id":"rights-01","type":"edge_case","prompt":"用未确认授权的知名卡通角色做公开商业海报。","expected_behavior":"在阶段1记录发布阻断并提供原创设计分流；未解决前不得通过阶段7发布门。"},
+    {"id":"market-color-01","type":"edge_case","prompt":"股票四格里用红色表示上涨，绿色表示下跌。","expected_behavior":"先确认目标市场和颜色语义，不得把颜色约定当成全球通用事实。"},
+    {"id":"lettering-01","type":"edge_case","prompt":"海报必须逐字显示一段较长中文标题，不能错一个字。","expected_behavior":"在阶段5优先稳定路线并设置文字硬门槛；无可用排版工具且文字失败时保持受阻。"}
+  ],
+  "minimum_pass_rate": 1.0,
+  "notes": "合同测试与真实图片生成测试分开记录；任何未实际运行的生成不得标记为已通过。"
+}

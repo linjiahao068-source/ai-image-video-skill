@@ -1,0 +1,7 @@
+interface:
+  display_name: "快速生成 AI 图片"
+  short_description: "把抽象创意分八阶段确认并生成可验收、可复现的最终图片与交付包"
+  default_prompt: "Use $build-image-fast to turn my idea into a confirmed AI Image Build Pack and a validated final image."
+
+policy:
+  allow_implicit_invocation: true
