@@ -1,0 +1,66 @@
+{
+  "schema_version": "5.2",
+  "project_id": "replace-me",
+  "version": "v0.1",
+  "build_mode": "candidate_preview",
+  "workflow_state_ref": "../project-state.json",
+  "approval_event_id": "",
+  "decision_fingerprint": "68eb4deb19943be23c755e9843c8c7ff9b70e5e28d3567b9d685db9459116bf3",
+  "canvas": {
+    "width": 2400,
+    "height": 1600,
+    "background": "#F7F4EE",
+    "padding": 40,
+    "gap": 24,
+    "font_size": 32,
+    "label_height": 112,
+    "max_clean_slots": 8,
+    "min_clean_tile_short_side": 384,
+    "max_clean_primary_roles": 2,
+    "min_annotated_tile_short_side": 384
+  },
+  "boards": {
+    "annotated": {
+      "filename": "project-asset-master-annotated-candidate-v01.png",
+      "title": "项目资产总览",
+      "sections": [
+        {
+          "id": "characters",
+          "title": "角色",
+          "asset_ids": ["CHAR-01"]
+        }
+      ]
+    },
+    "clean_groups": [
+      {
+        "id": "characters",
+        "filename": "project-asset-reference-clean-01-candidate-v01.png",
+        "primary_roles": ["character_identity"],
+        "asset_ids": ["CHAR-01"]
+      }
+    ],
+    "report_filename": "asset-board-build-report-v0.1.json"
+  },
+  "assets": [
+    {
+      "id": "CHAR-01",
+      "file": "replace-with-project-relative-or-absolute-path.png",
+      "type": "character_identity",
+      "label": "角色一",
+      "role": "主角",
+      "owner": "character-01",
+      "must_preserve": ["轮廓", "主色"],
+      "forbidden": ["身份漂移"],
+      "contract_versions": ["character-contract-v0.1"],
+      "rights_scope": "current-project",
+      "approval_status": "candidate",
+      "sha256": "",
+      "contains_text": false,
+      "critical": true,
+      "clean_groups": ["characters"],
+      "dedicated_group": "",
+      "views": ["front", "three_quarter", "side"],
+      "coverage_tags": ["neutral", "common_emotion", "max_allowed_action"]
+    }
+  ]
+}

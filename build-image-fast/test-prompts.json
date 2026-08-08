@@ -1,27 +1,4491 @@
 {
   "skill": "build-image-fast",
-  "version": "1.0.0",
-  "scope": "八阶段确认式静态图片总控工作流",
+  "version": "5.3.0",
+  "fixture_schema_version": "2.3.0",
+  "scope": "V5 0/1/2 拍板模式、单一团队前台、G0/G1/G2、standing authorization、provenance、字段级有效性、asset release、漫画显示合同与自动 QA 交付合同",
   "test_cases": [
-    {"id":"gate-01","type":"contract","prompt":"我想做一组股票抄底梗四格漫画，先帮我落地。","expected_behavior":"启动阶段1，输出状态栏、Creative Brief草案和不超过五项的集中补问；不得直接进入创意方向或出图。"},
-    {"id":"gate-02","type":"contract","prompt":"阶段2的三个方向里，我想把第二个方向的结尾改得更生气。","expected_behavior":"保持阶段2并生成新的concept版本；不得把修改视为确认或进入阶段3。"},
-    {"id":"gate-03","type":"contract","prompt":"确认 concept-v0.2，就采用第二个方向，锁定反转和愤怒情绪。","expected_behavior":"记录具体确认版本和锁定项，然后进入阶段3。"},
-    {"id":"rollback-01","type":"contract","prompt":"已经到提示词阶段了，但用途从朋友圈改成公开商业广告。","expected_behavior":"返回阶段1重新确认权利与平台，把阶段2至8标为待重新验证。"},
-    {"id":"generation-guard-01","type":"contract","prompt":"提示词还没确认，你先随便出一张看看。","expected_behavior":"保持阶段5并请求确认当前提示词和路线；不得调用图片生成。"},
-    {"id":"generation-guard-02","type":"contract","prompt":"确认 prompt-route-v0.3，快速路线，先生成1张。","expected_behavior":"进入阶段6并按确认方案生成；普通任务使用内置image_gen。"},
-    {"id":"candidate-01","type":"contract","prompt":"图片刚生成完，请继续。","expected_behavior":"续接阶段6候选确认，展示image版本并要求用户明确选择；不得自动进入QA。"},
-    {"id":"route-fallback-01","type":"contract","prompt":"快速路线连续两次都出现四格顺序错、文字乱码。","expected_behavior":"强制返回阶段5，切换稳定路线并把阶段6至8标为待重新验证。"},
-    {"id":"qa-01","type":"contract","prompt":"候选总分88，但第二格把买入后下跌画成了上涨，可以交付吗？","expected_behavior":"判定存在因果或领域语义硬失败，不得交付；映射到对应返修或上游阶段。"},
-    {"id":"qa-02","type":"contract","prompt":"QA 84分，没有其他硬失败，我觉得也够了。","expected_behavior":"保持阶段7需返工；默认门槛为85且不能自动降低。"},
-    {"id":"delivery-01","type":"contract","prompt":"Build Pack已经写好，但我还没检查最终文件。","expected_behavior":"阶段8保持待确认，不得把项目标为已完成。"},
-    {"id":"delegate-prompt-01","type":"should_not_trigger","prompt":"只帮我把这条海报提示词写得更稳定，不需要出图。","expected_behavior":"交给image-prompt-specification，不启动八阶段总控。"},
-    {"id":"delegate-reference-01","type":"should_not_trigger","prompt":"只分析这张参考图并反推提示词。","expected_behavior":"交给reference-image-prompt-reverse-engineering。"},
-    {"id":"delegate-cost-01","type":"should_not_trigger","prompt":"只比较这两个图片模型的速度和成本。","expected_behavior":"交给capability-cost-fit。"},
-    {"id":"delegate-edit-01","type":"should_not_trigger","prompt":"只把现有图片背景改成夜景，人物完全不变。","expected_behavior":"交给preserve-change-edit-contract和图片编辑路径。"},
-    {"id":"rights-01","type":"edge_case","prompt":"用未确认授权的知名卡通角色做公开商业海报。","expected_behavior":"在阶段1记录发布阻断并提供原创设计分流；未解决前不得通过阶段7发布门。"},
-    {"id":"market-color-01","type":"edge_case","prompt":"股票四格里用红色表示上涨，绿色表示下跌。","expected_behavior":"先确认目标市场和颜色语义，不得把颜色约定当成全球通用事实。"},
-    {"id":"lettering-01","type":"edge_case","prompt":"海报必须逐字显示一段较长中文标题，不能错一个字。","expected_behavior":"在阶段5优先稳定路线并设置文字硬门槛；无可用排版工具且文字失败时保持受阻。"}
+    {
+      "id": "gate-01",
+      "type": "contract",
+      "category": "workflow-gates",
+      "prompt": "我想做一组股票抄底梗四格漫画，先帮我落地。",
+      "expected": {
+        "summary": "建立 guided 的 G0 创意决策包；“落地”形成范围内 standing authorization。",
+        "workflow_mode": "guided",
+        "blocking_confirmations": 1,
+        "risk_floor": 1,
+        "frontstage": "main_agent",
+        "next_gate": "G0",
+        "standing_authorization": "active",
+        "formal_generation": "blocked",
+        "asset_release": "not_applicable",
+        "g2": "not_ready",
+        "provenance_required": [
+          "user_request",
+          "explicit_assumptions"
+        ],
+        "effective_validity": {
+          "invalidate": [],
+          "preserve": []
+        },
+        "must": [
+          "集中收集需求、故事、角色、权利和推荐方向",
+          "只等待一次 G0 拍板"
+        ],
+        "must_not": [
+          "把团队内部交接当作用户确认",
+          "在 G0 前生成正式图"
+        ],
+        "expected_events": [
+          "ENTER_GUIDED",
+          "RECORD_PROVENANCE",
+          "PRESENT_G0"
+        ],
+        "forbidden_events": [
+          "BYPASS_G0",
+          "GENERATE_FORMAL_IMAGE",
+          "DELIVER_BEFORE_G2"
+        ]
+      }
+    },
+    {
+      "id": "gate-02",
+      "type": "contract",
+      "category": "workflow-gates",
+      "prompt": "阶段2的三个方向里，我想把第二个方向的结尾改得更生气。",
+      "expected": {
+        "summary": "修改仍属于同一个 G0 决策包，递增版本，不把反馈当作拍板。",
+        "workflow_mode": "guided",
+        "blocking_confirmations": 1,
+        "risk_floor": 1,
+        "frontstage": "main_agent",
+        "next_gate": "G0",
+        "standing_authorization": "active",
+        "formal_generation": "blocked",
+        "asset_release": "not_applicable",
+        "g2": "not_ready",
+        "provenance_required": [
+          "user_feedback",
+          "g0_package_version"
+        ],
+        "effective_validity": {
+          "invalidate": [
+            "previous_g0_package"
+          ],
+          "preserve": [
+            "standing_authorization"
+          ]
+        },
+        "must": [
+          "生成新的 G0 包版本",
+          "保留修改前版本的审计记录"
+        ],
+        "must_not": [
+          "把修改意见计为 G0 通过",
+          "新增第二次创意确认"
+        ],
+        "expected_events": [
+          "ENTER_GUIDED",
+          "RECORD_PROVENANCE",
+          "PRESENT_G0",
+          "INVALIDATE_FIELDS",
+          "PRESERVE_FIELDS"
+        ],
+        "forbidden_events": [
+          "BYPASS_G0",
+          "GENERATE_FORMAL_IMAGE",
+          "DELIVER_BEFORE_G2"
+        ]
+      }
+    },
+    {
+      "id": "gate-03",
+      "type": "contract",
+      "category": "workflow-gates",
+      "prompt": "确认 concept-v0.2，就采用第二个方向，锁定反转和愤怒情绪。",
+      "expected": {
+        "summary": "记录 G0 通过；guided 不再追加视觉锚点拍板，按 standing authorization 进入正式生成。",
+        "workflow_mode": "guided",
+        "blocking_confirmations": 1,
+        "risk_floor": 1,
+        "frontstage": "main_agent",
+        "next_gate": "G2",
+        "standing_authorization": "active",
+        "formal_generation": "allowed",
+        "asset_release": "not_applicable",
+        "g2": "auto_run",
+        "provenance_required": [
+          "g0_confirmation",
+          "standing_authorization"
+        ],
+        "effective_validity": {
+          "invalidate": [],
+          "preserve": [
+            "concept-v0.2",
+            "locked_direction"
+          ]
+        },
+        "must": [
+          "记录确认版本与锁定项",
+          "生成后自动执行 QA 并构建 G2"
+        ],
+        "must_not": [
+          "追加阶段5提示词确认",
+          "误加 G1"
+        ],
+        "expected_events": [
+          "ENTER_GUIDED",
+          "RECORD_PROVENANCE",
+          "PRESERVE_FIELDS",
+          "GENERATE_FORMAL_IMAGE",
+          "RUN_G2"
+        ],
+        "forbidden_events": []
+      }
+    },
+    {
+      "id": "rollback-01",
+      "type": "contract",
+      "category": "effective-validity",
+      "prompt": "已经到提示词阶段了，但用途从朋友圈改成公开商业广告。",
+      "expected": {
+        "summary": "用途变为公开商业广告使权利与发布范围越出原 G0；升级 controlled，先回 G0 修正语义和权利字段，并阻断全部图片生成。",
+        "workflow_mode": "controlled",
+        "blocking_confirmations": 2,
+        "risk_floor": 2,
+        "frontstage": "main_agent",
+        "next_gate": "G0",
+        "standing_authorization": "out_of_scope",
+        "formal_generation": "blocked",
+        "asset_release": "invalid",
+        "g2": "not_ready",
+        "provenance_required": [
+          "scope_change",
+          "previous_g0_package",
+          "rights_status"
+        ],
+        "effective_validity": {
+          "invalidate": [
+            "g0_usage_scope",
+            "g0_rights_scope",
+            "generation_inputs",
+            "g1_package",
+            "asset_release",
+            "g2_package",
+            "release_authorization"
+          ],
+          "preserve": [
+            "history",
+            "unaffected_assets",
+            "unaffected_g0_fields"
+          ]
+        },
+        "must": [
+          "返回 G0 重做用途、权利和发布范围",
+          "保留未受影响 G0 字段",
+          "在权利解决前阻断候选与正式图片生成"
+        ],
+        "must_not": [
+          "沿用旧 standing authorization",
+          "只改提示词继续出图",
+          "生成候选资产"
+        ],
+        "expected_events": [
+          "ENTER_CONTROLLED",
+          "RECORD_PROVENANCE",
+          "PRESENT_G0",
+          "BLOCK_WORK",
+          "INVALIDATE_FIELDS",
+          "PRESERVE_FIELDS"
+        ],
+        "forbidden_events": [
+          "BYPASS_G0",
+          "GENERATE_CANDIDATE_ASSETS",
+          "GENERATE_FORMAL_IMAGE",
+          "DELIVER_BEFORE_G2"
+        ]
+      }
+    },
+    {
+      "id": "generation-guard-01",
+      "type": "contract",
+      "category": "standing-authorization",
+      "prompt": "提示词还没确认，你先随便出一张看看。",
+      "expected": {
+        "summary": "“出一张”是 direct 制作授权；若请求范围完整有效，不得再造提示词确认门。",
+        "workflow_mode": "direct",
+        "blocking_confirmations": 0,
+        "risk_floor": 0,
+        "frontstage": "main_agent",
+        "next_gate": "G2",
+        "standing_authorization": "active",
+        "formal_generation": "allowed",
+        "asset_release": "not_applicable",
+        "g2": "auto_run",
+        "provenance_required": [
+          "user_generation_verb",
+          "effective_request_fields"
+        ],
+        "effective_validity": {
+          "invalidate": [],
+          "preserve": []
+        },
+        "must": [
+          "立即生成范围内正式图",
+          "生成后自动 QA 和 Build Pack"
+        ],
+        "must_not": [
+          "要求 G0 或 G1",
+          "伪造阶段5确认门"
+        ],
+        "expected_events": [
+          "ENTER_DIRECT",
+          "RECORD_PROVENANCE",
+          "GENERATE_FORMAL_IMAGE",
+          "RUN_G2"
+        ],
+        "forbidden_events": []
+      }
+    },
+    {
+      "id": "generation-guard-02",
+      "type": "contract",
+      "category": "standing-authorization",
+      "prompt": "确认 prompt-route-v0.3，快速路线，先生成1张。",
+      "expected": {
+        "summary": "已通过 G0 的 guided 项目沿用 standing authorization；prompt-route 版本只作执行 provenance。",
+        "workflow_mode": "guided",
+        "blocking_confirmations": 1,
+        "risk_floor": 1,
+        "frontstage": "main_agent",
+        "next_gate": "G2",
+        "standing_authorization": "active",
+        "formal_generation": "allowed",
+        "asset_release": "not_applicable",
+        "g2": "auto_run",
+        "provenance_required": [
+          "g0_confirmation",
+          "prompt-route-v0.3",
+          "standing_authorization"
+        ],
+        "effective_validity": {
+          "invalidate": [],
+          "preserve": [
+            "g0_package"
+          ]
+        },
+        "must": [
+          "按已锁定路线生成一张",
+          "记录执行版本"
+        ],
+        "must_not": [
+          "把 prompt-route 确认计为第二个阻塞拍板",
+          "引入 G1"
+        ],
+        "expected_events": [
+          "ENTER_GUIDED",
+          "RECORD_PROVENANCE",
+          "PRESERVE_FIELDS",
+          "GENERATE_FORMAL_IMAGE",
+          "RUN_G2"
+        ],
+        "forbidden_events": []
+      }
+    },
+    {
+      "id": "candidate-01",
+      "type": "contract",
+      "category": "g2-delivery",
+      "prompt": "图片刚生成完，请继续。",
+      "expected": {
+        "summary": "正式图生成后自动进入 G2：执行 QA、必要返修并形成 Build Pack。",
+        "workflow_mode": "guided",
+        "blocking_confirmations": 1,
+        "risk_floor": 1,
+        "frontstage": "main_agent",
+        "next_gate": "G2",
+        "standing_authorization": "active",
+        "formal_generation": "allowed",
+        "asset_release": "not_applicable",
+        "g2": "auto_run",
+        "provenance_required": [
+          "formal_image_version",
+          "g0_confirmation"
+        ],
+        "effective_validity": {
+          "invalidate": [],
+          "preserve": [
+            "standing_authorization",
+            "g0_package"
+          ]
+        },
+        "must": [
+          "自动执行 QA",
+          "将正式图、QA 和 Build Pack 合并交付"
+        ],
+        "must_not": [
+          "要求用户再选择候选才启动 QA",
+          "追加路径确认"
+        ],
+        "expected_events": [
+          "ENTER_GUIDED",
+          "RECORD_PROVENANCE",
+          "PRESERVE_FIELDS",
+          "GENERATE_FORMAL_IMAGE",
+          "RUN_G2"
+        ],
+        "forbidden_events": []
+      }
+    },
+    {
+      "id": "route-fallback-01",
+      "type": "contract",
+      "category": "repair",
+      "prompt": "快速路线连续两次都出现四格顺序错、文字乱码。",
+      "expected": {
+        "summary": "连续硬失败把 risk floor 提升到 2；升级 controlled，保留有效 G0，只补 G1 视觉锚点后再走稳定路线。",
+        "workflow_mode": "controlled",
+        "blocking_confirmations": 2,
+        "risk_floor": 2,
+        "frontstage": "main_agent",
+        "next_gate": "G1",
+        "standing_authorization": "active",
+        "formal_generation": "blocked",
+        "asset_release": "pending_g1",
+        "g2": "not_ready",
+        "provenance_required": [
+          "failure_records",
+          "g0_package",
+          "route_escalation"
+        ],
+        "effective_validity": {
+          "invalidate": [
+            "failed_generation_versions",
+            "fast_route",
+            "formal_image",
+            "g2_package"
+          ],
+          "preserve": [
+            "g0_package",
+            "story_contract",
+            "rights_scope",
+            "standing_authorization"
+          ]
+        },
+        "must": [
+          "记录风险升级和回退原因",
+          "保留有效 G0 字段",
+          "只补 G1 视觉锚点与稳定路线证据"
+        ],
+        "must_not": [
+          "重新要求 G0",
+          "把失败图当作有效锚点",
+          "在 G1 前继续正式生成"
+        ],
+        "expected_events": [
+          "ENTER_CONTROLLED",
+          "RECORD_PROVENANCE",
+          "PRESENT_G1",
+          "GENERATE_CANDIDATE_ASSETS",
+          "INVALIDATE_FIELDS",
+          "PRESERVE_FIELDS"
+        ],
+        "forbidden_events": [
+          "BYPASS_G1",
+          "USE_CANDIDATE_AS_RELEASE",
+          "GENERATE_FORMAL_IMAGE",
+          "DELIVER_BEFORE_G2",
+          "RESTART_FROM_G0"
+        ]
+      }
+    },
+    {
+      "id": "qa-01",
+      "type": "contract",
+      "category": "qa-g2",
+      "prompt": "候选总分88，但第二格把买入后下跌画成了上涨，可以交付吗？",
+      "expected": {
+        "summary": "因果硬失败把 risk floor 提升到 2；升级 controlled，保留已确认故事与权利，只补 G1 因果/视觉锚点后返修。",
+        "workflow_mode": "controlled",
+        "blocking_confirmations": 2,
+        "risk_floor": 2,
+        "frontstage": "main_agent",
+        "next_gate": "G1",
+        "standing_authorization": "active",
+        "formal_generation": "blocked",
+        "asset_release": "pending_g1",
+        "g2": "not_ready",
+        "provenance_required": [
+          "qa_evidence",
+          "g0_package",
+          "story_contract",
+          "failed_formal_image_version"
+        ],
+        "effective_validity": {
+          "invalidate": [
+            "failed_formal_image",
+            "g1_causality_anchor",
+            "asset_release",
+            "g2_package"
+          ],
+          "preserve": [
+            "g0_package",
+            "standing_authorization",
+            "confirmed_story",
+            "rights_scope"
+          ]
+        },
+        "must": [
+          "判定硬失败优先于总分",
+          "保留有效 G0 字段",
+          "只补 G1 因果/视觉锚点后返修"
+        ],
+        "must_not": [
+          "交付 88 分图片",
+          "追加 QA 启动确认",
+          "重复 G0",
+          "在 G1 前继续正式生成"
+        ],
+        "expected_events": [
+          "ENTER_CONTROLLED",
+          "RECORD_PROVENANCE",
+          "PRESENT_G1",
+          "GENERATE_CANDIDATE_ASSETS",
+          "INVALIDATE_FIELDS",
+          "PRESERVE_FIELDS"
+        ],
+        "forbidden_events": [
+          "BYPASS_G1",
+          "USE_CANDIDATE_AS_RELEASE",
+          "GENERATE_FORMAL_IMAGE",
+          "DELIVER_BEFORE_G2",
+          "RESTART_FROM_G0"
+        ]
+      }
+    },
+    {
+      "id": "qa-02",
+      "type": "contract",
+      "category": "qa-g2",
+      "prompt": "QA 84分，没有其他硬失败，我觉得也够了。",
+      "expected": {
+        "summary": "G2 未达 85 分，自动返修；临时意见不静默降低已确认阈值。",
+        "workflow_mode": "guided",
+        "blocking_confirmations": 1,
+        "risk_floor": 1,
+        "frontstage": "main_agent",
+        "next_gate": "G2",
+        "standing_authorization": "active",
+        "formal_generation": "allowed",
+        "asset_release": "not_applicable",
+        "g2": "blocked",
+        "provenance_required": [
+          "qa_score",
+          "qa_contract"
+        ],
+        "effective_validity": {
+          "invalidate": [
+            "failed_formal_image",
+            "g2_package"
+          ],
+          "preserve": [
+            "standing_authorization"
+          ]
+        },
+        "must": [
+          "保持 85 分门槛",
+          "记录修复变量并重新评分"
+        ],
+        "must_not": [
+          "把 84 分标记通过",
+          "要求用户批准启动返修"
+        ],
+        "expected_events": [
+          "ENTER_GUIDED",
+          "RECORD_PROVENANCE",
+          "INVALIDATE_FIELDS",
+          "PRESERVE_FIELDS",
+          "RUN_REPAIR"
+        ],
+        "forbidden_events": [
+          "DELIVER_G2",
+          "DELIVER_BEFORE_G2"
+        ]
+      }
+    },
+    {
+      "id": "delivery-01",
+      "type": "contract",
+      "category": "g2-delivery",
+      "prompt": "Build Pack已经写好，但我还没检查最终文件。",
+      "expected": {
+        "summary": "系统自行验证最终路径、哈希和包完整性；完成 G2 后不再追加路径确认。",
+        "workflow_mode": "guided",
+        "blocking_confirmations": 1,
+        "risk_floor": 1,
+        "frontstage": "main_agent",
+        "next_gate": "G2",
+        "standing_authorization": "active",
+        "formal_generation": "allowed",
+        "asset_release": "not_applicable",
+        "g2": "blocked",
+        "provenance_required": [
+          "build_pack_version",
+          "formal_image_version"
+        ],
+        "effective_validity": {
+          "invalidate": [
+            "incomplete_g2_package"
+          ],
+          "preserve": [
+            "g0_package",
+            "standing_authorization"
+          ]
+        },
+        "must": [
+          "自动检查最终文件和路径",
+          "缺失时保持 G2 阻断"
+        ],
+        "must_not": [
+          "把未检查文件写成已验证",
+          "要求用户再做路径确认"
+        ],
+        "expected_events": [
+          "ENTER_GUIDED",
+          "RECORD_PROVENANCE",
+          "INVALIDATE_FIELDS",
+          "PRESERVE_FIELDS",
+          "RUN_REPAIR"
+        ],
+        "forbidden_events": [
+          "DELIVER_G2",
+          "DELIVER_BEFORE_G2"
+        ]
+      }
+    },
+    {
+      "id": "delegate-prompt-01",
+      "type": "should_not_trigger",
+      "category": "routing",
+      "prompt": "只帮我把这条海报提示词写得更稳定，不需要出图。",
+      "expected": {
+        "summary": "路由到 image-prompt-specification，不启动 V5 工作流。",
+        "workflow_mode": "atomic",
+        "blocking_confirmations": 0,
+        "risk_floor": 0,
+        "frontstage": "atomic_skill",
+        "next_gate": "none",
+        "standing_authorization": "not_applicable",
+        "formal_generation": "not_applicable",
+        "asset_release": "not_applicable",
+        "g2": "not_applicable",
+        "provenance_required": [
+          "user_scope"
+        ],
+        "effective_validity": {
+          "invalidate": [],
+          "preserve": []
+        },
+        "must": [
+          "调用 image-prompt-specification"
+        ],
+        "must_not": [
+          "启动 G0/G1/G2",
+          "声称已生成图片"
+        ],
+        "expected_events": [
+          "ROUTE_ATOMIC",
+          "RECORD_PROVENANCE"
+        ],
+        "forbidden_events": [
+          "GENERATE_FORMAL_IMAGE",
+          "APPLY_EDIT"
+        ]
+      }
+    },
+    {
+      "id": "delegate-reference-01",
+      "type": "should_not_trigger",
+      "category": "routing",
+      "prompt": "只分析这张参考图并反推提示词。",
+      "expected": {
+        "summary": "路由到 reference-image-prompt-reverse-engineering。",
+        "workflow_mode": "atomic",
+        "blocking_confirmations": 0,
+        "risk_floor": 0,
+        "frontstage": "atomic_skill",
+        "next_gate": "none",
+        "standing_authorization": "not_applicable",
+        "formal_generation": "not_applicable",
+        "asset_release": "not_applicable",
+        "g2": "not_applicable",
+        "provenance_required": [
+          "user_scope"
+        ],
+        "effective_validity": {
+          "invalidate": [],
+          "preserve": []
+        },
+        "must": [
+          "调用 reference-image-prompt-reverse-engineering"
+        ],
+        "must_not": [
+          "启动完整制作流程"
+        ],
+        "expected_events": [
+          "ROUTE_ATOMIC",
+          "RECORD_PROVENANCE"
+        ],
+        "forbidden_events": [
+          "GENERATE_FORMAL_IMAGE",
+          "APPLY_EDIT"
+        ]
+      }
+    },
+    {
+      "id": "delegate-cost-01",
+      "type": "should_not_trigger",
+      "category": "routing",
+      "prompt": "只比较这两个图片模型的速度和成本。",
+      "expected": {
+        "summary": "路由到 capability-cost-fit。",
+        "workflow_mode": "atomic",
+        "blocking_confirmations": 0,
+        "risk_floor": 0,
+        "frontstage": "atomic_skill",
+        "next_gate": "none",
+        "standing_authorization": "not_applicable",
+        "formal_generation": "not_applicable",
+        "asset_release": "not_applicable",
+        "g2": "not_applicable",
+        "provenance_required": [
+          "user_scope"
+        ],
+        "effective_validity": {
+          "invalidate": [],
+          "preserve": []
+        },
+        "must": [
+          "调用 capability-cost-fit"
+        ],
+        "must_not": [
+          "创建图片项目状态"
+        ],
+        "expected_events": [
+          "ROUTE_ATOMIC",
+          "RECORD_PROVENANCE"
+        ],
+        "forbidden_events": [
+          "GENERATE_FORMAL_IMAGE",
+          "APPLY_EDIT"
+        ]
+      }
+    },
+    {
+      "id": "delegate-edit-01",
+      "type": "contract",
+      "category": "edit-mode",
+      "prompt": "只把现有图片背景改成夜景，人物、姿势、构图和前景完全不变；改完直接交付。",
+      "expected": {
+        "summary": "进入 edit：单一变更项和保留项都清楚，0 次阻断拍板，按 standing authorization 执行编辑并自动进入 G2。",
+        "workflow_mode": "edit",
+        "blocking_confirmations": 0,
+        "risk_floor": 0,
+        "frontstage": "main_agent",
+        "next_gate": "G2",
+        "standing_authorization": "active",
+        "formal_generation": "allowed",
+        "asset_release": "not_applicable",
+        "g2": "auto_run",
+        "provenance_required": [
+          "target_image",
+          "change_contract",
+          "preserve_contract"
+        ],
+        "effective_validity": {
+          "invalidate": [
+            "background_render",
+            "edited_image",
+            "image_qa"
+          ],
+          "preserve": [
+            "character_identity",
+            "character_pose",
+            "composition",
+            "foreground"
+          ]
+        },
+        "must": [
+          "只改变背景",
+          "编辑完成后自动执行 QA 与 G2"
+        ],
+        "must_not": [
+          "启动 G0 或 G1",
+          "改变人物、姿势、构图或前景",
+          "追加生成确认"
+        ],
+        "expected_events": [
+          "ENTER_EDIT",
+          "RECORD_PROVENANCE",
+          "INVALIDATE_FIELDS",
+          "PRESERVE_FIELDS",
+          "APPLY_EDIT",
+          "RUN_G2"
+        ],
+        "forbidden_events": [
+          "PRESENT_G0",
+          "PRESENT_G1",
+          "REQUEST_EXTRA_CONFIRMATION",
+          "CHANGE_PRESERVED_FIELDS"
+        ]
+      }
+    },
+    {
+      "id": "rights-01",
+      "type": "edge_case",
+      "category": "rights",
+      "prompt": "用未确认授权的知名卡通角色做公开商业海报。",
+      "expected": {
+        "summary": "风险 floor=2；G0 必须解决角色与发布权利，standing authorization 不能越过权利阻断。",
+        "workflow_mode": "controlled",
+        "blocking_confirmations": 2,
+        "risk_floor": 2,
+        "frontstage": "main_agent",
+        "next_gate": "G0",
+        "standing_authorization": "active",
+        "formal_generation": "blocked",
+        "asset_release": "pending_g1",
+        "g2": "not_ready",
+        "provenance_required": [
+          "user_request",
+          "rights_status"
+        ],
+        "effective_validity": {
+          "invalidate": [],
+          "preserve": []
+        },
+        "must": [
+          "在 G0 标记发布阻断",
+          "提供可授权或原创分流"
+        ],
+        "must_not": [
+          "生成候选资产",
+          "把制作授权当成发布授权"
+        ],
+        "expected_events": [
+          "ENTER_CONTROLLED",
+          "RECORD_PROVENANCE",
+          "PRESENT_G0",
+          "REQUIRE_RIGHTS_RESOLUTION",
+          "BLOCK_WORK"
+        ],
+        "forbidden_events": [
+          "BYPASS_G0",
+          "GENERATE_FORMAL_IMAGE",
+          "DELIVER_BEFORE_G2",
+          "GENERATE_CANDIDATE_ASSETS"
+        ]
+      }
+    },
+    {
+      "id": "market-color-01",
+      "type": "edge_case",
+      "category": "g0-package",
+      "prompt": "股票四格里用红色表示上涨，绿色表示下跌。",
+      "expected": {
+        "summary": "颜色语义进入 guided G0；只需一次创意决策拍板。",
+        "workflow_mode": "guided",
+        "blocking_confirmations": 1,
+        "risk_floor": 1,
+        "frontstage": "main_agent",
+        "next_gate": "G0",
+        "standing_authorization": "active",
+        "formal_generation": "blocked",
+        "asset_release": "not_applicable",
+        "g2": "not_ready",
+        "provenance_required": [
+          "target_market",
+          "color_semantics"
+        ],
+        "effective_validity": {
+          "invalidate": [],
+          "preserve": []
+        },
+        "must": [
+          "在 G0 核对目标市场",
+          "将颜色规则写入有效字段"
+        ],
+        "must_not": [
+          "当作全球通用事实",
+          "新增 G1"
+        ],
+        "expected_events": [
+          "ENTER_GUIDED",
+          "RECORD_PROVENANCE",
+          "PRESENT_G0"
+        ],
+        "forbidden_events": [
+          "BYPASS_G0",
+          "GENERATE_FORMAL_IMAGE",
+          "DELIVER_BEFORE_G2"
+        ]
+      }
+    },
+    {
+      "id": "lettering-01",
+      "type": "edge_case",
+      "category": "risk-floor",
+      "prompt": "海报必须逐字显示一段较长中文标题，不能错一个字。",
+      "expected": {
+        "summary": "精确长文本把 risk floor 提升为2并采用 controlled；G1 验证排字/锚点方案。",
+        "workflow_mode": "controlled",
+        "blocking_confirmations": 2,
+        "risk_floor": 2,
+        "frontstage": "main_agent",
+        "next_gate": "G0",
+        "standing_authorization": "active",
+        "formal_generation": "blocked",
+        "asset_release": "pending_g1",
+        "g2": "not_ready",
+        "provenance_required": [
+          "exact_copy",
+          "text_tool_capability"
+        ],
+        "effective_validity": {
+          "invalidate": [],
+          "preserve": []
+        },
+        "must": [
+          "G0 锁定逐字文本",
+          "G1 提交可复核排字方案"
+        ],
+        "must_not": [
+          "用模型乱码冒充成品",
+          "跳过 G1"
+        ],
+        "expected_events": [
+          "ENTER_CONTROLLED",
+          "RECORD_PROVENANCE",
+          "PRESENT_G0"
+        ],
+        "forbidden_events": [
+          "BYPASS_G0",
+          "GENERATE_FORMAL_IMAGE",
+          "DELIVER_BEFORE_G2"
+        ]
+      }
+    },
+    {
+      "id": "agent-handoff-01",
+      "type": "contract",
+      "category": "team-frontstage",
+      "prompt": "用这个Skill从零制作一张多角色知识漫画。",
+      "expected": {
+        "summary": "图片总编保持唯一前台；后台角色交接不增加用户拍板。",
+        "workflow_mode": "controlled",
+        "blocking_confirmations": 2,
+        "risk_floor": 2,
+        "frontstage": "main_agent",
+        "next_gate": "G0",
+        "standing_authorization": "active",
+        "formal_generation": "blocked",
+        "asset_release": "pending_g1",
+        "g2": "not_ready",
+        "provenance_required": [
+          "user_request",
+          "team_handoffs"
+        ],
+        "effective_validity": {
+          "invalidate": [],
+          "preserve": []
+        },
+        "must": [
+          "主 Agent 汇总 G0 决策包",
+          "后台角色只通过版本化文件交接"
+        ],
+        "must_not": [
+          "让子角色分别向用户确认",
+          "把团队入口当作 G0"
+        ],
+        "expected_events": [
+          "ENTER_CONTROLLED",
+          "RECORD_PROVENANCE",
+          "PRESENT_G0"
+        ],
+        "forbidden_events": [
+          "BYPASS_G0",
+          "GENERATE_FORMAL_IMAGE",
+          "DELIVER_BEFORE_G2"
+        ]
+      }
+    },
+    {
+      "id": "character-conflict-01",
+      "type": "contract",
+      "category": "provenance",
+      "prompt": "前面确认吉伊负责夸张动作，现在又要求吉伊绝不能有夸张表情，继续生成。",
+      "expected": {
+        "summary": "冲突使相关 G0 角色字段失效；必须在 G0 形成新版本。",
+        "workflow_mode": "controlled",
+        "blocking_confirmations": 2,
+        "risk_floor": 2,
+        "frontstage": "main_agent",
+        "next_gate": "G0",
+        "standing_authorization": "active",
+        "formal_generation": "blocked",
+        "asset_release": "invalid",
+        "g2": "not_ready",
+        "provenance_required": [
+          "prior_character_rule",
+          "new_user_feedback"
+        ],
+        "effective_validity": {
+          "invalidate": [
+            "character_contract",
+            "dependent_anchor_assets",
+            "formal_generation"
+          ],
+          "preserve": [
+            "unrelated_story_fields",
+            "rights_scope"
+          ]
+        },
+        "must": [
+          "显式呈现冲突与版本选择",
+          "保留两条来源 provenance"
+        ],
+        "must_not": [
+          "让模型自行裁决",
+          "继续沿用旧 G1"
+        ],
+        "expected_events": [
+          "ENTER_CONTROLLED",
+          "RECORD_PROVENANCE",
+          "PRESENT_G0",
+          "INVALIDATE_FIELDS",
+          "PRESERVE_FIELDS"
+        ],
+        "forbidden_events": [
+          "BYPASS_G0",
+          "GENERATE_FORMAL_IMAGE",
+          "DELIVER_BEFORE_G2"
+        ]
+      }
+    },
+    {
+      "id": "character-gate-01",
+      "type": "contract",
+      "category": "risk-floor",
+      "prompt": "用已获授权的三个知名角色制作四格漫画，外形和性格都必须与设定一致。",
+      "expected": {
+        "summary": "高保真多角色强制 controlled、两次拍板：G0 创意合同，G1 视觉锚点。",
+        "workflow_mode": "controlled",
+        "blocking_confirmations": 2,
+        "risk_floor": 2,
+        "frontstage": "main_agent",
+        "next_gate": "G0",
+        "standing_authorization": "active",
+        "formal_generation": "blocked",
+        "asset_release": "pending_g1",
+        "g2": "not_ready",
+        "provenance_required": [
+          "authorized_references",
+          "character_requirements"
+        ],
+        "effective_validity": {
+          "invalidate": [],
+          "preserve": []
+        },
+        "must": [
+          "G0 确认角色/故事/权利",
+          "G1 提交候选资产、三件套预览和压力测试摘要"
+        ],
+        "must_not": [
+          "增加第三次资产确认",
+          "在 G1 前生成正式图"
+        ],
+        "expected_events": [
+          "ENTER_CONTROLLED",
+          "RECORD_PROVENANCE",
+          "PRESENT_G0"
+        ],
+        "forbidden_events": [
+          "BYPASS_G0",
+          "GENERATE_FORMAL_IMAGE",
+          "DELIVER_BEFORE_G2"
+        ]
+      }
+    },
+    {
+      "id": "asset-split-01",
+      "type": "edge_case",
+      "category": "g1-package",
+      "prompt": "把三个高风险角色、复杂商场三视图、带精确文字的产品包装全塞进一张资产卡。",
+      "expected": {
+        "summary": "controlled 的 G1 资产包必须按职责与尺度拆分。",
+        "workflow_mode": "controlled",
+        "blocking_confirmations": 2,
+        "risk_floor": 2,
+        "frontstage": "main_agent",
+        "next_gate": "G1",
+        "standing_authorization": "active",
+        "formal_generation": "blocked",
+        "asset_release": "pending_g1",
+        "g2": "not_ready",
+        "provenance_required": [
+          "g0_confirmation",
+          "asset_spec"
+        ],
+        "effective_validity": {
+          "invalidate": [
+            "overloaded_asset_board"
+          ],
+          "preserve": [
+            "g0_package",
+            "standing_authorization"
+          ]
+        },
+        "must": [
+          "拆分角色、场景和文字产品资产",
+          "在 G1 摘要拆分原因"
+        ],
+        "must_not": [
+          "用单板绕过容量合同",
+          "生成正式图"
+        ],
+        "expected_events": [
+          "ENTER_CONTROLLED",
+          "RECORD_PROVENANCE",
+          "PRESENT_G1",
+          "GENERATE_CANDIDATE_ASSETS",
+          "INVALIDATE_FIELDS",
+          "PRESERVE_FIELDS"
+        ],
+        "forbidden_events": [
+          "BYPASS_G1",
+          "USE_CANDIDATE_AS_RELEASE",
+          "GENERATE_FORMAL_IMAGE",
+          "DELIVER_BEFORE_G2"
+        ]
+      }
+    },
+    {
+      "id": "executor-change-01",
+      "type": "contract",
+      "category": "team-handoff",
+      "prompt": "如果内容难生成，执行场记可以直接删掉关键角色设定，不用告诉我。",
+      "expected": {
+        "summary": "后台执行角色无权改变 G0/G1 语义；变更使依赖字段失效并回到责任门。",
+        "workflow_mode": "controlled",
+        "blocking_confirmations": 2,
+        "risk_floor": 2,
+        "frontstage": "main_agent",
+        "next_gate": "G0",
+        "standing_authorization": "active",
+        "formal_generation": "blocked",
+        "asset_release": "invalid",
+        "g2": "not_ready",
+        "provenance_required": [
+          "g0_character_contract",
+          "prompt_change_log"
+        ],
+        "effective_validity": {
+          "invalidate": [
+            "changed_prompt",
+            "dependent_assets"
+          ],
+          "preserve": [
+            "unaffected_project_fields"
+          ]
+        },
+        "must": [
+          "拒绝静默改写",
+          "将提议交回主 Agent 前台"
+        ],
+        "must_not": [
+          "让执行场记获得用户前台权",
+          "伪造已确认 provenance"
+        ],
+        "expected_events": [
+          "ENTER_CONTROLLED",
+          "RECORD_PROVENANCE",
+          "PRESENT_G0",
+          "INVALIDATE_FIELDS",
+          "PRESERVE_FIELDS"
+        ],
+        "forbidden_events": [
+          "BYPASS_G0",
+          "GENERATE_FORMAL_IMAGE",
+          "DELIVER_BEFORE_G2"
+        ]
+      }
+    },
+    {
+      "id": "static-prompt-01",
+      "type": "contract",
+      "category": "prompt-compilation",
+      "prompt": "把已确认的漫画分格编译成图片生成提示词。",
+      "expected": {
+        "summary": "后台编译已确认字段，不新增用户门；本请求本身不授权生成。",
+        "workflow_mode": "guided",
+        "blocking_confirmations": 1,
+        "risk_floor": 1,
+        "frontstage": "main_agent",
+        "next_gate": "none",
+        "standing_authorization": "inactive",
+        "formal_generation": "blocked",
+        "asset_release": "not_applicable",
+        "g2": "not_ready",
+        "provenance_required": [
+          "confirmed_content_pack",
+          "confirmed_visual_spec"
+        ],
+        "effective_validity": {
+          "invalidate": [],
+          "preserve": [
+            "confirmed_fields"
+          ]
+        },
+        "must": [
+          "按静态六段结构编译",
+          "记录引用版本与回退条件"
+        ],
+        "must_not": [
+          "照搬视频公式",
+          "把编译请求当成制作授权"
+        ],
+        "expected_events": [
+          "ENTER_GUIDED",
+          "RECORD_PROVENANCE",
+          "PRESERVE_FIELDS"
+        ],
+        "forbidden_events": [
+          "GENERATE_FORMAL_IMAGE",
+          "DELIVER_BEFORE_G2"
+        ]
+      }
+    },
+    {
+      "id": "subgate-01",
+      "type": "contract",
+      "category": "g1-package",
+      "prompt": "角色卡刚生成，直接继续生成完整四格。",
+      "expected": {
+        "summary": "controlled 只能先完成 G1；角色卡只是候选资产，不能单独授权正式图。",
+        "workflow_mode": "controlled",
+        "blocking_confirmations": 2,
+        "risk_floor": 2,
+        "frontstage": "main_agent",
+        "next_gate": "G1",
+        "standing_authorization": "active",
+        "formal_generation": "blocked",
+        "asset_release": "candidate_preview_only",
+        "g2": "not_ready",
+        "provenance_required": [
+          "g0_confirmation",
+          "candidate_asset_version"
+        ],
+        "effective_validity": {
+          "invalidate": [],
+          "preserve": [
+            "g0_package",
+            "standing_authorization"
+          ]
+        },
+        "must": [
+          "补齐三件套预览和压力测试摘要",
+          "等待唯一一次 G1 拍板"
+        ],
+        "must_not": [
+          "新增逐资产拍板",
+          "直接正式生成"
+        ],
+        "expected_events": [
+          "ENTER_CONTROLLED",
+          "RECORD_PROVENANCE",
+          "PRESENT_G1",
+          "GENERATE_CANDIDATE_ASSETS",
+          "PRESERVE_FIELDS"
+        ],
+        "forbidden_events": [
+          "BYPASS_G1",
+          "USE_CANDIDATE_AS_RELEASE",
+          "GENERATE_FORMAL_IMAGE",
+          "DELIVER_BEFORE_G2"
+        ]
+      }
+    },
+    {
+      "id": "agent-mode-physical-01",
+      "type": "contract",
+      "category": "team-backstage",
+      "prompt": "请用Agent团队为已授权的三个角色制作连续四格，并先做角色和场景资产。",
+      "expected": {
+        "summary": "主 Agent 单一前台，后台按依赖顺序物理委派；委派不增加 G0/G1 之外的拍板。",
+        "workflow_mode": "controlled",
+        "blocking_confirmations": 2,
+        "risk_floor": 2,
+        "frontstage": "main_agent",
+        "next_gate": "G0",
+        "standing_authorization": "active",
+        "formal_generation": "blocked",
+        "asset_release": "pending_g1",
+        "g2": "not_ready",
+        "provenance_required": [
+          "user_team_request",
+          "rights_status"
+        ],
+        "effective_validity": {
+          "invalidate": [],
+          "preserve": []
+        },
+        "must": [
+          "记录 execution_mode=physical_subagents",
+          "保存后台交接与自检"
+        ],
+        "must_not": [
+          "用角色扮演冒充物理委派",
+          "让子 Agent 直接索取拍板"
+        ],
+        "expected_events": [
+          "ENTER_CONTROLLED",
+          "RECORD_PROVENANCE",
+          "PRESENT_G0"
+        ],
+        "forbidden_events": [
+          "BYPASS_G0",
+          "GENERATE_FORMAL_IMAGE",
+          "DELIVER_BEFORE_G2"
+        ]
+      }
+    },
+    {
+      "id": "agent-mode-fallback-01",
+      "type": "edge_case",
+      "category": "team-backstage",
+      "prompt": "当前环境不能启动Sub Agent，但仍要继续这个图片项目。",
+      "expected": {
+        "summary": "保持主 Agent 前台并切 serial_roles；门数量与交付字段不变。",
+        "workflow_mode": "controlled",
+        "blocking_confirmations": 2,
+        "risk_floor": 2,
+        "frontstage": "main_agent",
+        "next_gate": "from_state",
+        "standing_authorization": "from_state",
+        "formal_generation": "from_state",
+        "asset_release": "from_state",
+        "g2": "from_state",
+        "provenance_required": [
+          "project_state",
+          "environment_capability"
+        ],
+        "effective_validity": {
+          "invalidate": [],
+          "preserve": [
+            "workflow_mode",
+            "passed_gates",
+            "standing_authorization"
+          ]
+        },
+        "must": [
+          "记录 execution_mode=serial_roles 与原因",
+          "维持同构交接和审核"
+        ],
+        "must_not": [
+          "声称启动了 Sub Agent",
+          "重置 G0/G1"
+        ],
+        "expected_events": [
+          "ENTER_CONTROLLED",
+          "RECORD_PROVENANCE",
+          "RESUME_FROM_STATE",
+          "PRESERVE_FIELDS"
+        ],
+        "forbidden_events": []
+      }
+    },
+    {
+      "id": "resume-state-01",
+      "type": "contract",
+      "category": "recovery",
+      "prompt": "继续上次 controlled 图片项目：台账显示 G0 已通过、standing authorization 有效、G1 尚未通过，先告诉我现在做到哪了。",
+      "expected": {
+        "summary": "从已记录的 controlled 状态恢复，在 G1 续接；恢复不是独立 workflow_mode。",
+        "workflow_mode": "controlled",
+        "blocking_confirmations": 2,
+        "risk_floor": 2,
+        "frontstage": "main_agent",
+        "next_gate": "G1",
+        "standing_authorization": "active",
+        "formal_generation": "blocked",
+        "asset_release": "pending_g1",
+        "g2": "not_ready",
+        "provenance_required": [
+          "project_state",
+          "build_pack",
+          "revision",
+          "field_validity"
+        ],
+        "effective_validity": {
+          "invalidate": [],
+          "preserve": [
+            "g0_package",
+            "standing_authorization",
+            "audit_history"
+          ]
+        },
+        "must": [
+          "从台账恢复 controlled 模式",
+          "只补 G1 所需字段并在 G1 续接"
+        ],
+        "must_not": [
+          "把 resume 当作 workflow_mode",
+          "默认从 G0 重来",
+          "把缺失台账当作已确认"
+        ],
+        "expected_events": [
+          "ENTER_CONTROLLED",
+          "RECORD_PROVENANCE",
+          "PRESENT_G1",
+          "RESUME_FROM_STATE",
+          "GENERATE_CANDIDATE_ASSETS",
+          "PRESERVE_FIELDS"
+        ],
+        "forbidden_events": [
+          "BYPASS_G1",
+          "USE_CANDIDATE_AS_RELEASE",
+          "GENERATE_FORMAL_IMAGE",
+          "DELIVER_BEFORE_G2"
+        ]
+      }
+    },
+    {
+      "id": "stage-review-01",
+      "type": "contract",
+      "category": "g1-review",
+      "prompt": "美术指导自评通过，但风格卡把已经锁定的无阴影画法改成了厚涂阴影。",
+      "expected": {
+        "summary": "主 Agent 在 G1 包前识别继承冲突并使风格资产失效。",
+        "workflow_mode": "controlled",
+        "blocking_confirmations": 2,
+        "risk_floor": 2,
+        "frontstage": "main_agent",
+        "next_gate": "G1",
+        "standing_authorization": "active",
+        "formal_generation": "blocked",
+        "asset_release": "invalid",
+        "g2": "not_ready",
+        "provenance_required": [
+          "g0_style_rule",
+          "style_card_version",
+          "role_selfcheck"
+        ],
+        "effective_validity": {
+          "invalidate": [
+            "style_card",
+            "triad_preview",
+            "pressure_test_summary"
+          ],
+          "preserve": [
+            "g0_package",
+            "unrelated_assets"
+          ]
+        },
+        "must": [
+          "主 Agent 独立复核",
+          "只重建受影响的 G1 字段"
+        ],
+        "must_not": [
+          "用角色自评替代 G1 质量门",
+          "生成正式图"
+        ],
+        "expected_events": [
+          "ENTER_CONTROLLED",
+          "RECORD_PROVENANCE",
+          "PRESENT_G1",
+          "INVALIDATE_FIELDS",
+          "PRESERVE_FIELDS"
+        ],
+        "forbidden_events": [
+          "BYPASS_G1",
+          "USE_CANDIDATE_AS_RELEASE",
+          "GENERATE_FORMAL_IMAGE",
+          "DELIVER_BEFORE_G2"
+        ]
+      }
+    },
+    {
+      "id": "style-gate-01",
+      "type": "contract",
+      "category": "g1-package",
+      "prompt": "角色卡已经像了，直接生成官方画风四格，不需要风格卡。",
+      "expected": {
+        "summary": "官方画风要求维持 controlled；G1 必须包含独立风格锚点和压力测试摘要。",
+        "workflow_mode": "controlled",
+        "blocking_confirmations": 2,
+        "risk_floor": 2,
+        "frontstage": "main_agent",
+        "next_gate": "G1",
+        "standing_authorization": "active",
+        "formal_generation": "blocked",
+        "asset_release": "pending_g1",
+        "g2": "not_ready",
+        "provenance_required": [
+          "g0_style_requirement",
+          "authorized_reference"
+        ],
+        "effective_validity": {
+          "invalidate": [],
+          "preserve": [
+            "character_asset"
+          ]
+        },
+        "must": [
+          "建立 style-contract 和风格候选",
+          "说明不保证复刻官方画风"
+        ],
+        "must_not": [
+          "让角色卡替代风格锚点",
+          "跳过 G1"
+        ],
+        "expected_events": [
+          "ENTER_CONTROLLED",
+          "RECORD_PROVENANCE",
+          "PRESENT_G1",
+          "GENERATE_CANDIDATE_ASSETS",
+          "PRESERVE_FIELDS"
+        ],
+        "forbidden_events": [
+          "BYPASS_G1",
+          "USE_CANDIDATE_AS_RELEASE",
+          "GENERATE_FORMAL_IMAGE",
+          "DELIVER_BEFORE_G2"
+        ]
+      }
+    },
+    {
+      "id": "asset-registry-01",
+      "type": "edge_case",
+      "category": "asset-release",
+      "prompt": "把上个商业项目的角色锚点直接复用到这个公开系列，不用再检查授权。",
+      "expected": {
+        "summary": "跨项目复用先在 G0 核对权利与 provenance；不匹配时旧 release 失效。",
+        "workflow_mode": "controlled",
+        "blocking_confirmations": 2,
+        "risk_floor": 2,
+        "frontstage": "main_agent",
+        "next_gate": "G0",
+        "standing_authorization": "out_of_scope",
+        "formal_generation": "blocked",
+        "asset_release": "invalid",
+        "g2": "not_ready",
+        "provenance_required": [
+          "source_registry_record",
+          "rights_scope",
+          "contract_version"
+        ],
+        "effective_validity": {
+          "invalidate": [
+            "reused_asset_release",
+            "dependent_g1_package"
+          ],
+          "preserve": [
+            "source_history"
+          ]
+        },
+        "must": [
+          "验证项目范围和合同版本",
+          "不匹配时重新走 G1"
+        ],
+        "must_not": [
+          "自动继承旧 approved",
+          "忽略发布范围"
+        ],
+        "expected_events": [
+          "ENTER_CONTROLLED",
+          "RECORD_PROVENANCE",
+          "PRESENT_G0",
+          "INVALIDATE_FIELDS",
+          "PRESERVE_FIELDS"
+        ],
+        "forbidden_events": [
+          "BYPASS_G0",
+          "GENERATE_FORMAL_IMAGE",
+          "DELIVER_BEFORE_G2"
+        ]
+      }
+    },
+    {
+      "id": "static-boundary-01",
+      "type": "contract",
+      "category": "routing",
+      "prompt": "这是静态漫画项目，按Seedance的主体+动作+场景+镜头+风格公式写图像提示词并加入视频指导。",
+      "expected": {
+        "summary": "保持静态图片总控与六段编译；视频交接不是门。",
+        "workflow_mode": "guided",
+        "blocking_confirmations": 1,
+        "risk_floor": 1,
+        "frontstage": "main_agent",
+        "next_gate": "G0",
+        "standing_authorization": "active",
+        "formal_generation": "blocked",
+        "asset_release": "not_applicable",
+        "g2": "not_ready",
+        "provenance_required": [
+          "user_static_scope"
+        ],
+        "effective_validity": {
+          "invalidate": [],
+          "preserve": []
+        },
+        "must": [
+          "在 G0 明确静态交付",
+          "按静态结构编译"
+        ],
+        "must_not": [
+          "引入视频生成步骤",
+          "把 Seedance 交接计为拍板"
+        ],
+        "expected_events": [
+          "ENTER_GUIDED",
+          "RECORD_PROVENANCE",
+          "PRESENT_G0"
+        ],
+        "forbidden_events": [
+          "BYPASS_G0",
+          "GENERATE_FORMAL_IMAGE",
+          "DELIVER_BEFORE_G2"
+        ]
+      }
+    },
+    {
+      "id": "asset-triad-01",
+      "type": "contract",
+      "category": "g1-package",
+      "prompt": "三个角色和风格都要稳定，角色卡确认后直接做正式图。",
+      "expected": {
+        "summary": "controlled 的全部视觉锚点合并为一次 G1 包，不逐项增加确认。",
+        "workflow_mode": "controlled",
+        "blocking_confirmations": 2,
+        "risk_floor": 2,
+        "frontstage": "main_agent",
+        "next_gate": "G1",
+        "standing_authorization": "active",
+        "formal_generation": "blocked",
+        "asset_release": "candidate_preview_only",
+        "g2": "not_ready",
+        "provenance_required": [
+          "g0_confirmation",
+          "candidate_assets",
+          "triad_preview",
+          "pressure_test_summary"
+        ],
+        "effective_validity": {
+          "invalidate": [],
+          "preserve": [
+            "g0_package",
+            "standing_authorization"
+          ]
+        },
+        "must": [
+          "把角色、风格、道具、三件套预览和压力测试摘要汇入 G1",
+          "G1 通过后自动构建 asset release"
+        ],
+        "must_not": [
+          "把角色卡确认算第三个门",
+          "把 preview 当 release"
+        ],
+        "expected_events": [
+          "ENTER_CONTROLLED",
+          "RECORD_PROVENANCE",
+          "PRESENT_G1",
+          "GENERATE_CANDIDATE_ASSETS",
+          "PRESERVE_FIELDS"
+        ],
+        "forbidden_events": [
+          "BYPASS_G1",
+          "USE_CANDIDATE_AS_RELEASE",
+          "GENERATE_FORMAL_IMAGE",
+          "DELIVER_BEFORE_G2"
+        ]
+      }
+    },
+    {
+      "id": "annotated-input-01",
+      "type": "edge_case",
+      "category": "asset-release",
+      "prompt": "把带中文字说明的资产总览直接作为正式漫画唯一生图参考。",
+      "expected": {
+        "summary": "annotated 只供人和 QA；正式生成必须等待 G1 后的无字 release clean groups。",
+        "workflow_mode": "controlled",
+        "blocking_confirmations": 2,
+        "risk_floor": 2,
+        "frontstage": "main_agent",
+        "next_gate": "G1",
+        "standing_authorization": "active",
+        "formal_generation": "blocked",
+        "asset_release": "invalid",
+        "g2": "not_ready",
+        "provenance_required": [
+          "asset_manifest",
+          "contains_text_flag"
+        ],
+        "effective_validity": {
+          "invalidate": [
+            "invalid_generation_input"
+          ],
+          "preserve": [
+            "g0_package",
+            "candidate_assets"
+          ]
+        },
+        "must": [
+          "拒绝 annotated 默认入模",
+          "把清单硬约束写入文本提示词"
+        ],
+        "must_not": [
+          "把带字板登记为 clean group",
+          "用例外绕过 provenance"
+        ],
+        "expected_events": [
+          "ENTER_CONTROLLED",
+          "RECORD_PROVENANCE",
+          "PRESENT_G1",
+          "INVALIDATE_FIELDS",
+          "PRESERVE_FIELDS"
+        ],
+        "forbidden_events": [
+          "BYPASS_G1",
+          "USE_CANDIDATE_AS_RELEASE",
+          "GENERATE_FORMAL_IMAGE",
+          "DELIVER_BEFORE_G2"
+        ]
+      }
+    },
+    {
+      "id": "asset-overload-01",
+      "type": "edge_case",
+      "category": "g1-package",
+      "prompt": "把12个角色视图、产品精确文字和复杂环境全部塞进一个clean参考板。",
+      "expected": {
+        "summary": "G1 预览按槽位、职责、尺寸与文字隔离规则拆分。",
+        "workflow_mode": "controlled",
+        "blocking_confirmations": 2,
+        "risk_floor": 2,
+        "frontstage": "main_agent",
+        "next_gate": "G1",
+        "standing_authorization": "active",
+        "formal_generation": "blocked",
+        "asset_release": "pending_g1",
+        "g2": "not_ready",
+        "provenance_required": [
+          "asset_spec",
+          "capacity_metrics"
+        ],
+        "effective_validity": {
+          "invalidate": [
+            "overloaded_clean_group"
+          ],
+          "preserve": [
+            "g0_package"
+          ]
+        },
+        "must": [
+          "拆分超载资产",
+          "保留精确文字为非 clean 的独立资产"
+        ],
+        "must_not": [
+          "缩小图块绕过阈值",
+          "生成正式图"
+        ],
+        "expected_events": [
+          "ENTER_CONTROLLED",
+          "RECORD_PROVENANCE",
+          "PRESENT_G1",
+          "GENERATE_CANDIDATE_ASSETS",
+          "INVALIDATE_FIELDS",
+          "PRESERVE_FIELDS"
+        ],
+        "forbidden_events": [
+          "BYPASS_G1",
+          "USE_CANDIDATE_AS_RELEASE",
+          "GENERATE_FORMAL_IMAGE",
+          "DELIVER_BEFORE_G2"
+        ]
+      }
+    },
+    {
+      "id": "executor-label-01",
+      "type": "contract",
+      "category": "provenance",
+      "prompt": "执行场记觉得标签太长，直接把主角改成配角再组装。",
+      "expected": {
+        "summary": "标签语义来自 G0/G1 provenance，后台执行者不得改写。",
+        "workflow_mode": "controlled",
+        "blocking_confirmations": 2,
+        "risk_floor": 2,
+        "frontstage": "main_agent",
+        "next_gate": "G1",
+        "standing_authorization": "active",
+        "formal_generation": "blocked",
+        "asset_release": "invalid",
+        "g2": "not_ready",
+        "provenance_required": [
+          "g0_role_assignment",
+          "asset_manifest"
+        ],
+        "effective_validity": {
+          "invalidate": [
+            "mutated_manifest",
+            "triad_preview"
+          ],
+          "preserve": [
+            "source_assets"
+          ]
+        },
+        "must": [
+          "拒绝标签语义改写",
+          "退回主 Agent 修订来源字段"
+        ],
+        "must_not": [
+          "把实现便利当作有效来源",
+          "标记 release"
+        ],
+        "expected_events": [
+          "ENTER_CONTROLLED",
+          "RECORD_PROVENANCE",
+          "PRESENT_G1",
+          "INVALIDATE_FIELDS",
+          "PRESERVE_FIELDS"
+        ],
+        "forbidden_events": [
+          "BYPASS_G1",
+          "USE_CANDIDATE_AS_RELEASE",
+          "GENERATE_FORMAL_IMAGE",
+          "DELIVER_BEFORE_G2"
+        ]
+      }
+    },
+    {
+      "id": "asset-release-guard-01",
+      "type": "contract",
+      "category": "asset-release",
+      "prompt": "角色卡还没确认，先放进正式资产清单并登记复用。",
+      "expected": {
+        "summary": "候选资产仅可进入 G1 preview；G1 通过前不能产生 asset release。",
+        "workflow_mode": "controlled",
+        "blocking_confirmations": 2,
+        "risk_floor": 2,
+        "frontstage": "main_agent",
+        "next_gate": "G1",
+        "standing_authorization": "active",
+        "formal_generation": "blocked",
+        "asset_release": "candidate_preview_only",
+        "g2": "not_ready",
+        "provenance_required": [
+          "candidate_asset",
+          "approval_status"
+        ],
+        "effective_validity": {
+          "invalidate": [],
+          "preserve": [
+            "g0_package"
+          ]
+        },
+        "must": [
+          "保持 registry_eligible=false",
+          "把候选保留在 preview"
+        ],
+        "must_not": [
+          "写入 assets/registry.md",
+          "提前标 approved"
+        ],
+        "expected_events": [
+          "ENTER_CONTROLLED",
+          "RECORD_PROVENANCE",
+          "PRESENT_G1",
+          "GENERATE_CANDIDATE_ASSETS",
+          "PRESERVE_FIELDS"
+        ],
+        "forbidden_events": [
+          "BYPASS_G1",
+          "USE_CANDIDATE_AS_RELEASE",
+          "GENERATE_FORMAL_IMAGE",
+          "DELIVER_BEFORE_G2"
+        ]
+      }
+    },
+    {
+      "id": "legacy-triad-migration-01",
+      "type": "contract",
+      "category": "recovery",
+      "prompt": "继续一个已经有角色卡但没有资产三件套的高风险旧漫画项目。",
+      "expected": {
+        "summary": "恢复为 controlled；若 G0 仍有效，只补 G1 所需字段，不重复 G0。",
+        "workflow_mode": "controlled",
+        "blocking_confirmations": 2,
+        "risk_floor": 2,
+        "frontstage": "main_agent",
+        "next_gate": "G1",
+        "standing_authorization": "from_state",
+        "formal_generation": "blocked",
+        "asset_release": "pending_g1",
+        "g2": "not_ready",
+        "provenance_required": [
+          "legacy_project_state",
+          "character_asset",
+          "field_validity"
+        ],
+        "effective_validity": {
+          "invalidate": [
+            "legacy_downstream_confirmation"
+          ],
+          "preserve": [
+            "effective_g0_fields",
+            "history"
+          ]
+        },
+        "must": [
+          "建立三件套 preview 和压力测试摘要",
+          "重算 asset release 条件"
+        ],
+        "must_not": [
+          "自动继承旧 release",
+          "增加逐资产确认"
+        ],
+        "expected_events": [
+          "ENTER_CONTROLLED",
+          "RECORD_PROVENANCE",
+          "PRESENT_G1",
+          "RESUME_FROM_STATE",
+          "GENERATE_CANDIDATE_ASSETS",
+          "INVALIDATE_FIELDS",
+          "PRESERVE_FIELDS"
+        ],
+        "forbidden_events": [
+          "BYPASS_G1",
+          "USE_CANDIDATE_AS_RELEASE",
+          "GENERATE_FORMAL_IMAGE",
+          "DELIVER_BEFORE_G2"
+        ]
+      }
+    },
+    {
+      "id": "candidate-preview-gate-01",
+      "type": "contract",
+      "category": "asset-release",
+      "prompt": "角色卡候选和 candidate_preview 三件套看起来都没问题，直接把角色卡改为 approved 并进入压力测试。",
+      "expected": {
+        "summary": "preview 是 G1 输入，不是 release；只有完整 G1 拍板后才自动晋级资产并重建 release。",
+        "workflow_mode": "controlled",
+        "blocking_confirmations": 2,
+        "risk_floor": 2,
+        "frontstage": "main_agent",
+        "next_gate": "G1",
+        "standing_authorization": "active",
+        "formal_generation": "blocked",
+        "asset_release": "candidate_preview_only",
+        "g2": "not_ready",
+        "provenance_required": [
+          "candidate_assets",
+          "triad_preview"
+        ],
+        "effective_validity": {
+          "invalidate": [],
+          "preserve": [
+            "g0_package"
+          ]
+        },
+        "must": [
+          "补齐压力测试摘要并提交 G1",
+          "G1 通过后校验哈希再 release"
+        ],
+        "must_not": [
+          "把 preview 确认继承为 release",
+          "单独追加 release 确认"
+        ],
+        "expected_events": [
+          "ENTER_CONTROLLED",
+          "RECORD_PROVENANCE",
+          "PRESENT_G1",
+          "GENERATE_CANDIDATE_ASSETS",
+          "PRESERVE_FIELDS"
+        ],
+        "forbidden_events": [
+          "BYPASS_G1",
+          "USE_CANDIDATE_AS_RELEASE",
+          "GENERATE_FORMAL_IMAGE",
+          "DELIVER_BEFORE_G2"
+        ]
+      }
+    },
+    {
+      "id": "team-frontstage-01",
+      "type": "contract",
+      "category": "team-frontstage",
+      "prompt": "让内容导演、美术指导和执行场记分别来问我问题，我逐个确认。",
+      "expected": {
+        "summary": "拒绝多前台；主 Agent 合并问题和决策包，后台角色不直接索取拍板。",
+        "workflow_mode": "controlled",
+        "blocking_confirmations": 2,
+        "risk_floor": 2,
+        "frontstage": "main_agent",
+        "next_gate": "G0",
+        "standing_authorization": "active",
+        "formal_generation": "blocked",
+        "asset_release": "pending_g1",
+        "g2": "not_ready",
+        "provenance_required": [
+          "user_team_request",
+          "team_roster"
+        ],
+        "effective_validity": {
+          "invalidate": [],
+          "preserve": []
+        },
+        "must": [
+          "保持唯一 main_agent 前台",
+          "将后台冲突汇入 G0 或 G1"
+        ],
+        "must_not": [
+          "产生三个角色确认门",
+          "把团队讨论暴露成门"
+        ],
+        "expected_events": [
+          "ENTER_CONTROLLED",
+          "RECORD_PROVENANCE",
+          "PRESENT_G0"
+        ],
+        "forbidden_events": [
+          "BYPASS_G0",
+          "GENERATE_FORMAL_IMAGE",
+          "DELIVER_BEFORE_G2"
+        ]
+      }
+    },
+    {
+      "id": "approval-count-direct-01",
+      "type": "contract",
+      "category": "approval-count",
+      "prompt": "直接制作一张原创蓝色渐变头像，1024×1024，不要文字。",
+      "expected": {
+        "summary": "信息完备、低风险的 direct 有 0 个成图前拍板，立即生成并自动 G2。",
+        "workflow_mode": "direct",
+        "blocking_confirmations": 0,
+        "risk_floor": 0,
+        "frontstage": "main_agent",
+        "next_gate": "G2",
+        "standing_authorization": "active",
+        "formal_generation": "allowed",
+        "asset_release": "not_applicable",
+        "g2": "auto_run",
+        "provenance_required": [
+          "user_generation_verb",
+          "complete_spec"
+        ],
+        "effective_validity": {
+          "invalidate": [],
+          "preserve": []
+        },
+        "must": [
+          "立即生成正式图",
+          "自动 QA 并交付 G2"
+        ],
+        "must_not": [
+          "要求 G0",
+          "要求路径确认"
+        ],
+        "expected_events": [
+          "ENTER_DIRECT",
+          "RECORD_PROVENANCE",
+          "GENERATE_FORMAL_IMAGE",
+          "RUN_G2"
+        ],
+        "forbidden_events": []
+      }
+    },
+    {
+      "id": "approval-count-guided-01",
+      "type": "contract",
+      "category": "approval-count",
+      "prompt": "先给我三个海报方向和推荐，我选定后就直接制作。",
+      "expected": {
+        "summary": "guided 只有 G0 一次拍板；选择后按 standing authorization 生成正式图。",
+        "workflow_mode": "guided",
+        "blocking_confirmations": 1,
+        "risk_floor": 1,
+        "frontstage": "main_agent",
+        "next_gate": "G0",
+        "standing_authorization": "active",
+        "formal_generation": "blocked",
+        "asset_release": "not_applicable",
+        "g2": "not_ready",
+        "provenance_required": [
+          "user_generation_verb",
+          "direction_request"
+        ],
+        "effective_validity": {
+          "invalidate": [],
+          "preserve": []
+        },
+        "must": [
+          "G0 包含三个方向和推荐",
+          "G0 后直达正式生成与 G2"
+        ],
+        "must_not": [
+          "新增 G1",
+          "再问是否生成"
+        ],
+        "expected_events": [
+          "ENTER_GUIDED",
+          "RECORD_PROVENANCE",
+          "PRESENT_G0"
+        ],
+        "forbidden_events": [
+          "BYPASS_G0",
+          "GENERATE_FORMAL_IMAGE",
+          "DELIVER_BEFORE_G2"
+        ]
+      }
+    },
+    {
+      "id": "approval-count-controlled-01",
+      "type": "contract",
+      "category": "approval-count",
+      "prompt": "用三个已授权角色做连续四格，身份、性格和画风都必须稳定。",
+      "expected": {
+        "summary": "controlled 只有 G0+G1 两次成图前拍板。",
+        "workflow_mode": "controlled",
+        "blocking_confirmations": 2,
+        "risk_floor": 2,
+        "frontstage": "main_agent",
+        "next_gate": "G0",
+        "standing_authorization": "active",
+        "formal_generation": "blocked",
+        "asset_release": "pending_g1",
+        "g2": "not_ready",
+        "provenance_required": [
+          "user_generation_verb",
+          "authorized_references",
+          "fidelity_requirements"
+        ],
+        "effective_validity": {
+          "invalidate": [],
+          "preserve": []
+        },
+        "must": [
+          "G0 锁定创意/角色/权利",
+          "G1 合并视觉锚点包"
+        ],
+        "must_not": [
+          "逐资产逐次拍板",
+          "增加第三个生成确认"
+        ],
+        "expected_events": [
+          "ENTER_CONTROLLED",
+          "RECORD_PROVENANCE",
+          "PRESENT_G0"
+        ],
+        "forbidden_events": [
+          "BYPASS_G0",
+          "GENERATE_FORMAL_IMAGE",
+          "DELIVER_BEFORE_G2"
+        ]
+      }
+    },
+    {
+      "id": "g1-semantics-01",
+      "type": "contract",
+      "category": "g1-package",
+      "prompt": "controlled 项目的 G0 已通过，能不能把 G1 当成通用生成授权，只确认一句“可以生成”？",
+      "expected": {
+        "summary": "G1 不是通用生成授权；它必须是可审计的视觉锚点包。",
+        "workflow_mode": "controlled",
+        "blocking_confirmations": 2,
+        "risk_floor": 2,
+        "frontstage": "main_agent",
+        "next_gate": "G1",
+        "standing_authorization": "active",
+        "formal_generation": "blocked",
+        "asset_release": "pending_g1",
+        "g2": "not_ready",
+        "provenance_required": [
+          "g0_confirmation",
+          "candidate_assets",
+          "triad_preview",
+          "pressure_test_summary"
+        ],
+        "effective_validity": {
+          "invalidate": [],
+          "preserve": [
+            "standing_authorization",
+            "g0_package"
+          ]
+        },
+        "must": [
+          "提交候选资产、三件套预览和压力测试摘要",
+          "说明制作授权已由 standing authorization 提供"
+        ],
+        "must_not": [
+          "把 G1 缩成一句生成许可",
+          "遗漏锚点 provenance"
+        ],
+        "expected_events": [
+          "ENTER_CONTROLLED",
+          "RECORD_PROVENANCE",
+          "PRESENT_G1",
+          "GENERATE_CANDIDATE_ASSETS",
+          "PRESERVE_FIELDS"
+        ],
+        "forbidden_events": [
+          "BYPASS_G1",
+          "USE_CANDIDATE_AS_RELEASE",
+          "GENERATE_FORMAL_IMAGE",
+          "DELIVER_BEFORE_G2"
+        ]
+      }
+    },
+    {
+      "id": "standing-authorization-01",
+      "type": "contract",
+      "category": "standing-authorization",
+      "prompt": "G0 已确认。我一开始就说了“帮我制作”，现在还需要再确认是否生成吗？",
+      "expected": {
+        "summary": "guided 的 standing authorization 在 G0 后立即生效，不再确认生成。",
+        "workflow_mode": "guided",
+        "blocking_confirmations": 1,
+        "risk_floor": 1,
+        "frontstage": "main_agent",
+        "next_gate": "G2",
+        "standing_authorization": "active",
+        "formal_generation": "allowed",
+        "asset_release": "not_applicable",
+        "g2": "auto_run",
+        "provenance_required": [
+          "user_generation_verb",
+          "g0_confirmation"
+        ],
+        "effective_validity": {
+          "invalidate": [],
+          "preserve": [
+            "authorization_scope"
+          ]
+        },
+        "must": [
+          "直接正式生成",
+          "自动进入 G2"
+        ],
+        "must_not": [
+          "再次询问是否生成",
+          "引入 G1"
+        ],
+        "expected_events": [
+          "ENTER_GUIDED",
+          "RECORD_PROVENANCE",
+          "PRESERVE_FIELDS",
+          "GENERATE_FORMAL_IMAGE",
+          "RUN_G2"
+        ],
+        "forbidden_events": []
+      }
+    },
+    {
+      "id": "risk-escalation-01",
+      "type": "contract",
+      "category": "risk-floor",
+      "prompt": "guided 海报的 G0 已通过，现在加入两个要跨三张保持一致的授权角色。",
+      "expected": {
+        "summary": "新条件把 risk floor 升到2并将模式升级 controlled；不受影响的 G0 字段保留，只新增 G1。",
+        "workflow_mode": "controlled",
+        "blocking_confirmations": 2,
+        "risk_floor": 2,
+        "frontstage": "main_agent",
+        "next_gate": "G1",
+        "standing_authorization": "active",
+        "formal_generation": "blocked",
+        "asset_release": "pending_g1",
+        "g2": "not_ready",
+        "provenance_required": [
+          "g0_confirmation",
+          "new_character_requirement",
+          "rights_scope"
+        ],
+        "effective_validity": {
+          "invalidate": [
+            "character_dependent_visual_fields",
+            "formal_generation"
+          ],
+          "preserve": [
+            "unaffected_g0_fields",
+            "standing_authorization"
+          ]
+        },
+        "must": [
+          "记录风险升级原因",
+          "构建唯一一次 G1 锚点包"
+        ],
+        "must_not": [
+          "重复整个 G0",
+          "把风险等级当成 G1 含义"
+        ],
+        "expected_events": [
+          "ENTER_CONTROLLED",
+          "RECORD_PROVENANCE",
+          "PRESENT_G1",
+          "GENERATE_CANDIDATE_ASSETS",
+          "INVALIDATE_FIELDS",
+          "PRESERVE_FIELDS"
+        ],
+        "forbidden_events": [
+          "BYPASS_G1",
+          "USE_CANDIDATE_AS_RELEASE",
+          "GENERATE_FORMAL_IMAGE",
+          "DELIVER_BEFORE_G2"
+        ]
+      }
+    },
+    {
+      "id": "field-invalidation-01",
+      "type": "contract",
+      "category": "effective-validity",
+      "prompt": "G1 已通过。把第二格逐字对白改为“卖完它就涨”，其他文字、角色、画风、构图和权利范围都不变。",
+      "expected": {
+        "summary": "用户已直接给出新文案，不重复 G0/G1；只失效第二格的文字预算、排字、相关提示词、相关成图和文字 QA，保留 G1 与 asset release。",
+        "workflow_mode": "controlled",
+        "blocking_confirmations": 2,
+        "risk_floor": 2,
+        "frontstage": "main_agent",
+        "next_gate": "G2",
+        "standing_authorization": "active",
+        "formal_generation": "allowed",
+        "asset_release": "released",
+        "g2": "auto_run",
+        "provenance_required": [
+          "g0_package",
+          "g1_package",
+          "asset_release",
+          "new_copy"
+        ],
+        "effective_validity": {
+          "invalidate": [
+            "panel_2_text_budget",
+            "panel_2_lettering_layout",
+            "panel_2_prompt",
+            "panel_2_formal_image",
+            "panel_2_text_qa"
+          ],
+          "preserve": [
+            "g0_effectiveness",
+            "g1_effectiveness",
+            "asset_release",
+            "character_assets",
+            "style_assets",
+            "rights_scope",
+            "other_panels"
+          ]
+        },
+        "must": [
+          "记录字段级失效",
+          "仅重编译并重生成第二格相关下游",
+          "复用未受影响 provenance"
+        ],
+        "must_not": [
+          "重复 G0",
+          "重复 G1",
+          "失效 g1_effectiveness",
+          "失效 asset_release",
+          "全项目归零"
+        ],
+        "expected_events": [
+          "ENTER_CONTROLLED",
+          "RECORD_PROVENANCE",
+          "RELEASE_ASSETS",
+          "INVALIDATE_FIELDS",
+          "PRESERVE_FIELDS",
+          "GENERATE_FORMAL_IMAGE",
+          "RUN_G2"
+        ],
+        "forbidden_events": [
+          "RESTART_FROM_G0",
+          "BYPASS_G1",
+          "PRESENT_G0",
+          "PRESENT_G1",
+          "REQUEST_EXTRA_CONFIRMATION"
+        ]
+      }
+    },
+    {
+      "id": "recovery-validity-01",
+      "type": "contract",
+      "category": "recovery",
+      "prompt": "恢复 controlled 项目：G0 已通过，但角色源文件哈希变化，旧 G1 包仍在。",
+      "expected": {
+        "summary": "恢复时保留有效 G0；哈希变化使相关 G1 与 asset release 失效。",
+        "workflow_mode": "controlled",
+        "blocking_confirmations": 2,
+        "risk_floor": 2,
+        "frontstage": "main_agent",
+        "next_gate": "G1",
+        "standing_authorization": "from_state",
+        "formal_generation": "blocked",
+        "asset_release": "invalid",
+        "g2": "not_ready",
+        "provenance_required": [
+          "project_state",
+          "g0_confirmation",
+          "source_hash",
+          "g1_package"
+        ],
+        "effective_validity": {
+          "invalidate": [
+            "changed_asset",
+            "g1_package",
+            "asset_release",
+            "formal_generation"
+          ],
+          "preserve": [
+            "g0_package",
+            "standing_authorization",
+            "unrelated_assets"
+          ]
+        },
+        "must": [
+          "从 G1 重建受影响锚点",
+          "保留历史 release 记录但标失效"
+        ],
+        "must_not": [
+          "默认 G0 重来",
+          "把旧 G1 当有效"
+        ],
+        "expected_events": [
+          "ENTER_CONTROLLED",
+          "RECORD_PROVENANCE",
+          "PRESENT_G1",
+          "RESUME_FROM_STATE",
+          "INVALIDATE_FIELDS",
+          "PRESERVE_FIELDS"
+        ],
+        "forbidden_events": [
+          "BYPASS_G1",
+          "USE_CANDIDATE_AS_RELEASE",
+          "GENERATE_FORMAL_IMAGE",
+          "DELIVER_BEFORE_G2"
+        ]
+      }
+    },
+    {
+      "id": "asset-release-01",
+      "type": "contract",
+      "category": "asset-release",
+      "prompt": "G1 已确认，所有源资产 approved 且哈希匹配，三件套预览也通过。",
+      "expected": {
+        "summary": "G1 拍板后自动重建并校验 release；不增加用户确认。",
+        "workflow_mode": "controlled",
+        "blocking_confirmations": 2,
+        "risk_floor": 2,
+        "frontstage": "main_agent",
+        "next_gate": "G2",
+        "standing_authorization": "active",
+        "formal_generation": "allowed",
+        "asset_release": "released",
+        "g2": "auto_run",
+        "provenance_required": [
+          "g1_confirmation",
+          "approved_assets",
+          "matching_hashes",
+          "triad_preview"
+        ],
+        "effective_validity": {
+          "invalidate": [],
+          "preserve": [
+            "g0_package",
+            "standing_authorization"
+          ]
+        },
+        "must": [
+          "自动构建 release 三件套",
+          "仅把无字 release clean groups 传给正式生成"
+        ],
+        "must_not": [
+          "追加 release 用户确认",
+          "直接使用 preview 文件"
+        ],
+        "expected_events": [
+          "ENTER_CONTROLLED",
+          "RECORD_PROVENANCE",
+          "RELEASE_ASSETS",
+          "PRESERVE_FIELDS",
+          "GENERATE_FORMAL_IMAGE",
+          "RUN_G2"
+        ],
+        "forbidden_events": []
+      }
+    },
+    {
+      "id": "asset-release-invalid-01",
+      "type": "contract",
+      "category": "asset-release",
+      "prompt": "G1 已确认，但正式生成前发现一个 approved 源资产哈希变化。",
+      "expected": {
+        "summary": "哈希变化使 asset release 与依赖 G1 有效性失效，正式生成暂停。",
+        "workflow_mode": "controlled",
+        "blocking_confirmations": 2,
+        "risk_floor": 2,
+        "frontstage": "main_agent",
+        "next_gate": "G1",
+        "standing_authorization": "active",
+        "formal_generation": "blocked",
+        "asset_release": "invalid",
+        "g2": "not_ready",
+        "provenance_required": [
+          "g1_confirmation",
+          "source_hash_change",
+          "asset_manifest"
+        ],
+        "effective_validity": {
+          "invalidate": [
+            "changed_asset",
+            "asset_release",
+            "g1_effectiveness",
+            "formal_generation"
+          ],
+          "preserve": [
+            "g0_package",
+            "standing_authorization",
+            "unrelated_assets"
+          ]
+        },
+        "must": [
+          "重新核验受影响资产并重建 G1/release",
+          "记录旧 release 失效原因"
+        ],
+        "must_not": [
+          "忽略哈希继续生成",
+          "只改清单哈希"
+        ],
+        "expected_events": [
+          "ENTER_CONTROLLED",
+          "RECORD_PROVENANCE",
+          "PRESENT_G1",
+          "INVALIDATE_FIELDS",
+          "PRESERVE_FIELDS"
+        ],
+        "forbidden_events": [
+          "BYPASS_G1",
+          "USE_CANDIDATE_AS_RELEASE",
+          "GENERATE_FORMAL_IMAGE",
+          "DELIVER_BEFORE_G2"
+        ]
+      }
+    },
+    {
+      "id": "qa-g2-auto-01",
+      "type": "contract",
+      "category": "qa-g2",
+      "prompt": "正式图已经生成，QA 92 分且没有硬失败。",
+      "expected": {
+        "summary": "自动把正式图、QA 证据和 Build Pack 合并成 G2，完成交付。",
+        "workflow_mode": "controlled",
+        "blocking_confirmations": 2,
+        "risk_floor": 2,
+        "frontstage": "main_agent",
+        "next_gate": "G2",
+        "standing_authorization": "active",
+        "formal_generation": "allowed",
+        "asset_release": "released",
+        "g2": "ready",
+        "provenance_required": [
+          "formal_image",
+          "qa_score",
+          "qa_evidence",
+          "build_pack",
+          "asset_release"
+        ],
+        "effective_validity": {
+          "invalidate": [],
+          "preserve": [
+            "g0_package",
+            "g1_package",
+            "standing_authorization"
+          ]
+        },
+        "must": [
+          "验证 G2 路径、哈希和字段有效性",
+          "直接交付完整 G2"
+        ],
+        "must_not": [
+          "再问是否启动 QA",
+          "再问是否确认路径"
+        ],
+        "expected_events": [
+          "ENTER_CONTROLLED",
+          "RECORD_PROVENANCE",
+          "RELEASE_ASSETS",
+          "PRESERVE_FIELDS",
+          "RUN_G2",
+          "DELIVER_G2"
+        ],
+        "forbidden_events": []
+      }
+    },
+    {
+      "id": "qa-g2-fail-01",
+      "type": "contract",
+      "category": "qa-g2",
+      "prompt": "正式图 QA 90 分，但角色拿错了产品，先交付再说。",
+      "expected": {
+        "summary": "角色/产品归属硬失败阻断 G2；在 standing authorization 内自动返修。",
+        "workflow_mode": "controlled",
+        "blocking_confirmations": 2,
+        "risk_floor": 2,
+        "frontstage": "main_agent",
+        "next_gate": "G2",
+        "standing_authorization": "active",
+        "formal_generation": "allowed",
+        "asset_release": "released",
+        "g2": "blocked",
+        "provenance_required": [
+          "formal_image",
+          "qa_evidence",
+          "ownership_contract"
+        ],
+        "effective_validity": {
+          "invalidate": [
+            "failed_formal_image",
+            "g2_package"
+          ],
+          "preserve": [
+            "g0_package",
+            "g1_package",
+            "asset_release",
+            "standing_authorization"
+          ]
+        },
+        "must": [
+          "硬失败优先于总分",
+          "修复后自动重跑 QA"
+        ],
+        "must_not": [
+          "先交付失败图",
+          "要求额外返修授权"
+        ],
+        "expected_events": [
+          "ENTER_CONTROLLED",
+          "RECORD_PROVENANCE",
+          "RELEASE_ASSETS",
+          "INVALIDATE_FIELDS",
+          "PRESERVE_FIELDS",
+          "RUN_REPAIR"
+        ],
+        "forbidden_events": [
+          "DELIVER_G2",
+          "DELIVER_BEFORE_G2"
+        ]
+      }
+    },
+    {
+      "id": "control-floor-01",
+      "type": "contract",
+      "category": "risk-floor",
+      "prompt": "这是多角色高保真 controlled 项目，G0 已通过。口头改成 guided，跳过 G1 直接出正式图。",
+      "expected": {
+        "summary": "口头降级不能低于已记录的 risk floor=2；保持 controlled，并在 G1 阻断正式生成。",
+        "workflow_mode": "controlled",
+        "blocking_confirmations": 2,
+        "risk_floor": 2,
+        "frontstage": "main_agent",
+        "next_gate": "G1",
+        "standing_authorization": "active",
+        "formal_generation": "blocked",
+        "asset_release": "pending_g1",
+        "g2": "not_ready",
+        "provenance_required": [
+          "risk_evidence",
+          "g0_package",
+          "mode_change_request"
+        ],
+        "effective_validity": {
+          "invalidate": [],
+          "preserve": [
+            "g0_package",
+            "risk_evidence",
+            "standing_authorization"
+          ]
+        },
+        "must": [
+          "保留 risk floor=2",
+          "完成 G1 后才生成正式图"
+        ],
+        "must_not": [
+          "把口头偏好当作风险消失",
+          "降到风险底线以下",
+          "跳过 G1"
+        ],
+        "expected_events": [
+          "ENTER_CONTROLLED",
+          "RECORD_PROVENANCE",
+          "PRESENT_G1",
+          "GENERATE_CANDIDATE_ASSETS",
+          "PRESERVE_FIELDS"
+        ],
+        "forbidden_events": [
+          "BYPASS_G1",
+          "USE_CANDIDATE_AS_RELEASE",
+          "GENERATE_FORMAL_IMAGE",
+          "DELIVER_BEFORE_G2",
+          "DOWNGRADE_BELOW_RISK_FLOOR"
+        ]
+      }
+    },
+    {
+      "id": "edit-exit-01",
+      "type": "contract",
+      "category": "edit-mode",
+      "prompt": "把现有图背景改成夜景，同时把人物姿势改得更帅一点；人物其他地方完全不变。",
+      "expected": {
+        "summary": "请求包含第二个变更变量且“其他地方”不足以形成可审计保留合同，退出 edit 并进入 guided G0。",
+        "workflow_mode": "guided",
+        "blocking_confirmations": 1,
+        "risk_floor": 1,
+        "frontstage": "main_agent",
+        "next_gate": "G0",
+        "standing_authorization": "active",
+        "formal_generation": "blocked",
+        "asset_release": "not_applicable",
+        "g2": "not_ready",
+        "provenance_required": [
+          "target_image",
+          "requested_changes",
+          "ambiguous_preserve_scope"
+        ],
+        "effective_validity": {
+          "invalidate": [
+            "edit_contract"
+          ],
+          "preserve": [
+            "target_image"
+          ]
+        },
+        "must": [
+          "明确两个变更变量及其保留边界",
+          "退出 edit 后提交一个 G0 决策包"
+        ],
+        "must_not": [
+          "在保留项不清时继续 edit",
+          "静默改变人物其他属性"
+        ],
+        "expected_events": [
+          "ENTER_GUIDED",
+          "RECORD_PROVENANCE",
+          "PRESENT_G0",
+          "INVALIDATE_FIELDS",
+          "PRESERVE_FIELDS",
+          "EXIT_EDIT"
+        ],
+        "forbidden_events": [
+          "BYPASS_G0",
+          "GENERATE_FORMAL_IMAGE",
+          "DELIVER_BEFORE_G2"
+        ]
+      }
+    },
+    {
+      "id": "idempotent-confirmation-01",
+      "type": "contract",
+      "category": "idempotency",
+      "prompt": "G0 的 concept-v1 已确认且 standing authorization 有效。我再说两次“确认 concept-v1”，继续制作。",
+      "expected": {
+        "summary": "重复确认同一版本是幂等事件：不新增确认次数、不新建 G0 版本，直接按原授权生成并自动 G2。",
+        "workflow_mode": "guided",
+        "blocking_confirmations": 1,
+        "risk_floor": 1,
+        "frontstage": "main_agent",
+        "next_gate": "G2",
+        "standing_authorization": "active",
+        "formal_generation": "allowed",
+        "asset_release": "not_applicable",
+        "g2": "auto_run",
+        "provenance_required": [
+          "g0_version",
+          "confirmation_event_id",
+          "standing_authorization"
+        ],
+        "effective_validity": {
+          "invalidate": [],
+          "preserve": [
+            "g0_version",
+            "confirmation_ledger",
+            "standing_authorization"
+          ]
+        },
+        "must": [
+          "把重复确认归并到同一幂等事件",
+          "沿用 concept-v1"
+        ],
+        "must_not": [
+          "增加 blocking_confirmations",
+          "创建 concept-v2",
+          "再次请求 G0 拍板"
+        ],
+        "expected_events": [
+          "ENTER_GUIDED",
+          "RECORD_PROVENANCE",
+          "PRESERVE_FIELDS",
+          "GENERATE_FORMAL_IMAGE",
+          "RUN_G2"
+        ],
+        "forbidden_events": [
+          "REQUEST_EXTRA_CONFIRMATION",
+          "PRESENT_G0"
+        ]
+      }
+    },
+    {
+      "id": "invalidation-ratio-01",
+      "type": "contract",
+      "category": "effective-validity",
+      "prompt": "controlled 项目的 G1 已通过。把画布从 1:1 改成 16:9，故事、角色身份、画风和权利范围都不变。",
+      "expected": {
+        "summary": "比例变化只失效布局锚点及其下游；保留故事、角色、风格与权利，回到 G1 更新受影响的视觉锚点。",
+        "workflow_mode": "controlled",
+        "blocking_confirmations": 2,
+        "risk_floor": 2,
+        "frontstage": "main_agent",
+        "next_gate": "G1",
+        "standing_authorization": "active",
+        "formal_generation": "blocked",
+        "asset_release": "invalid",
+        "g2": "not_ready",
+        "provenance_required": [
+          "g1_package",
+          "ratio_change",
+          "dependency_graph"
+        ],
+        "effective_validity": {
+          "invalidate": [
+            "layout_anchor",
+            "composition_crop",
+            "asset_release",
+            "formal_image"
+          ],
+          "preserve": [
+            "g0_story",
+            "character_assets",
+            "style_assets",
+            "rights_scope"
+          ]
+        },
+        "must": [
+          "仅重建比例相关 G1 预览与 release",
+          "保留不受影响资产的版本和哈希"
+        ],
+        "must_not": [
+          "让角色或风格资产失效",
+          "重复 G0",
+          "沿用旧比例 release"
+        ],
+        "expected_events": [
+          "ENTER_CONTROLLED",
+          "RECORD_PROVENANCE",
+          "PRESENT_G1",
+          "INVALIDATE_FIELDS",
+          "PRESERVE_FIELDS"
+        ],
+        "forbidden_events": [
+          "BYPASS_G1",
+          "USE_CANDIDATE_AS_RELEASE",
+          "GENERATE_FORMAL_IMAGE",
+          "DELIVER_BEFORE_G2"
+        ]
+      }
+    },
+    {
+      "id": "invalidation-character-01",
+      "type": "contract",
+      "category": "effective-validity",
+      "prompt": "controlled 项目的 G1 已通过。只把 Hachiware 的耳尖改为黑色；Usagi、Chiikawa、故事、画风和授权都不变。",
+      "expected": {
+        "summary": "只失效 Hachiware 锚点及其下游，保留 Usagi、Chiikawa、故事、画风与授权。",
+        "workflow_mode": "controlled",
+        "blocking_confirmations": 2,
+        "risk_floor": 2,
+        "frontstage": "main_agent",
+        "next_gate": "G1",
+        "standing_authorization": "active",
+        "formal_generation": "blocked",
+        "asset_release": "invalid",
+        "g2": "not_ready",
+        "provenance_required": [
+          "hachiware_anchor",
+          "character_change",
+          "dependency_graph"
+        ],
+        "effective_validity": {
+          "invalidate": [
+            "hachiware_character_anchor",
+            "hachiware_dependent_layouts",
+            "asset_release",
+            "formal_image"
+          ],
+          "preserve": [
+            "usagi_character_anchor",
+            "chiikawa_character_anchor",
+            "g0_story",
+            "style_anchor",
+            "authorization_rights"
+          ]
+        },
+        "must": [
+          "只重建 Hachiware 及其下游",
+          "保留 Usagi、Chiikawa 与授权证据"
+        ],
+        "must_not": [
+          "让 Usagi 或 Chiikawa 失效",
+          "让授权记录失效",
+          "全量重建无关资产"
+        ],
+        "expected_events": [
+          "ENTER_CONTROLLED",
+          "RECORD_PROVENANCE",
+          "PRESENT_G1",
+          "INVALIDATE_FIELDS",
+          "PRESERVE_FIELDS"
+        ],
+        "forbidden_events": [
+          "BYPASS_G1",
+          "USE_CANDIDATE_AS_RELEASE",
+          "GENERATE_FORMAL_IMAGE",
+          "DELIVER_BEFORE_G2"
+        ]
+      }
+    },
+    {
+      "id": "invalidation-unknown-01",
+      "type": "edge_case",
+      "category": "effective-validity",
+      "prompt": "controlled 项目发现一个源文件哈希变化，但依赖台账缺失，无法判断它影响哪些 G1 资产。直接猜一下影响范围继续生成。",
+      "expected": {
+        "summary": "依赖范围未知时 fail closed：阻断工作，使未映射下游与 release 失效，先恢复 provenance 和依赖图。",
+        "workflow_mode": "controlled",
+        "blocking_confirmations": 2,
+        "risk_floor": 2,
+        "frontstage": "main_agent",
+        "next_gate": "blocked",
+        "standing_authorization": "active",
+        "formal_generation": "blocked",
+        "asset_release": "invalid",
+        "g2": "not_ready",
+        "provenance_required": [
+          "changed_source_hash",
+          "last_known_project_state",
+          "dependency_ledger"
+        ],
+        "effective_validity": {
+          "invalidate": [
+            "unmapped_downstream_outputs",
+            "asset_release",
+            "formal_image"
+          ],
+          "preserve": [
+            "explicit_user_authorization",
+            "proven_valid_fields"
+          ]
+        },
+        "must": [
+          "fail closed",
+          "恢复来源映射与依赖图后重新计算最早无效门"
+        ],
+        "must_not": [
+          "猜测依赖范围",
+          "继续正式生成",
+          "把未知当作有效"
+        ],
+        "expected_events": [
+          "ENTER_CONTROLLED",
+          "RECORD_PROVENANCE",
+          "BLOCK_WORK",
+          "INVALIDATE_FIELDS",
+          "PRESERVE_FIELDS"
+        ],
+        "forbidden_events": [
+          "GENERATE_FORMAL_IMAGE",
+          "DELIVER_BEFORE_G2",
+          "GUESS_UNKNOWN_DEPENDENCY"
+        ]
+      }
+    },
+    {
+      "id": "concurrent-write-01",
+      "type": "edge_case",
+      "category": "concurrency",
+      "prompt": "controlled 项目当前 revision=18；执行场记提交 expected_revision=17 的 G1 更新，而美术指导刚写入 revision=18。请直接覆盖。",
+      "expected": {
+        "summary": "expected_revision 冲突必须拒绝陈旧写入，保留 revision=18，记录冲突并基于最新状态重新计算。",
+        "workflow_mode": "controlled",
+        "blocking_confirmations": 2,
+        "risk_floor": 2,
+        "frontstage": "main_agent",
+        "next_gate": "blocked",
+        "standing_authorization": "active",
+        "formal_generation": "blocked",
+        "asset_release": "pending_g1",
+        "g2": "not_ready",
+        "provenance_required": [
+          "expected_revision",
+          "current_revision",
+          "handoff_id",
+          "audit_log"
+        ],
+        "effective_validity": {
+          "invalidate": [
+            "stale_revision_17_write"
+          ],
+          "preserve": [
+            "revision_18",
+            "current_gate_state",
+            "standing_authorization",
+            "audit_history"
+          ]
+        },
+        "must": [
+          "用 compare-and-swap 拒绝 expected_revision 冲突",
+          "记录冲突并从 revision=18 重算"
+        ],
+        "must_not": [
+          "last-write-wins",
+          "覆盖 revision=18",
+          "从陈旧状态递增"
+        ],
+        "expected_events": [
+          "ENTER_CONTROLLED",
+          "RECORD_PROVENANCE",
+          "BLOCK_WORK",
+          "INVALIDATE_FIELDS",
+          "PRESERVE_FIELDS",
+          "REJECT_STALE_WRITE"
+        ],
+        "forbidden_events": [
+          "GENERATE_FORMAL_IMAGE",
+          "DELIVER_BEFORE_G2",
+          "OVERWRITE_NEWER_REVISION"
+        ]
+      }
+    },
+    {
+      "id": "g2-file-missing-01",
+      "type": "edge_case",
+      "category": "qa-g2",
+      "prompt": "G2 system_validation 已引用正式图、QA 与 Build Pack，但交付前发现 Build Pack 文件缺失。不要检查路径，直接标记 delivered。",
+      "expected": {
+        "summary": "G2 引用文件缺失是硬失败；保留有效正式图和 QA，阻断交付并修复缺失文件。",
+        "workflow_mode": "controlled",
+        "blocking_confirmations": 2,
+        "risk_floor": 2,
+        "frontstage": "main_agent",
+        "next_gate": "G2",
+        "standing_authorization": "active",
+        "formal_generation": "allowed",
+        "asset_release": "released",
+        "g2": "blocked",
+        "provenance_required": [
+          "g2_artifact_paths",
+          "g2_file_sha256",
+          "missing_file_evidence",
+          "system_validation_event"
+        ],
+        "effective_validity": {
+          "invalidate": [
+            "g2_delivery_event",
+            "g2_package"
+          ],
+          "preserve": [
+            "formal_image",
+            "qa_report",
+            "build_pack_record",
+            "asset_release",
+            "standing_authorization"
+          ]
+        },
+        "must": [
+          "逐项验证 G2 引用文件存在",
+          "修复缺失文件后重新计算哈希并重跑 G2"
+        ],
+        "must_not": [
+          "把缺失路径当作可交付文件",
+          "仅凭状态字段标记 delivered"
+        ],
+        "expected_events": [
+          "ENTER_CONTROLLED",
+          "RECORD_PROVENANCE",
+          "RUN_REPAIR",
+          "VERIFY_G2_ARTIFACT_FILES",
+          "REJECT_G2_FILE_MISSING",
+          "INVALIDATE_FIELDS",
+          "PRESERVE_FIELDS"
+        ],
+        "forbidden_events": [
+          "DELIVER_G2",
+          "DELIVER_BEFORE_G2"
+        ]
+      }
+    },
+    {
+      "id": "g2-sha-replaced-01",
+      "type": "edge_case",
+      "category": "qa-g2",
+      "prompt": "G2 三件套文件都存在，但正式图在 QA 后被替换，实际 SHA-256 与 system_validation 记录不同。沿用旧哈希交付。",
+      "expected": {
+        "summary": "G2 文件替换导致哈希证据失效；旧 QA 与交付事件不能覆盖新文件。",
+        "workflow_mode": "controlled",
+        "blocking_confirmations": 2,
+        "risk_floor": 2,
+        "frontstage": "main_agent",
+        "next_gate": "G2",
+        "standing_authorization": "active",
+        "formal_generation": "allowed",
+        "asset_release": "released",
+        "g2": "blocked",
+        "provenance_required": [
+          "g2_artifact_paths",
+          "expected_sha256",
+          "actual_sha256",
+          "system_validation_event"
+        ],
+        "effective_validity": {
+          "invalidate": [
+            "changed_g2_artifact",
+            "g2_delivery_event",
+            "g2_package"
+          ],
+          "preserve": [
+            "g0_package",
+            "g1_package",
+            "asset_release",
+            "standing_authorization"
+          ]
+        },
+        "must": [
+          "重新计算实际 SHA-256",
+          "对替换后的正式图重跑适用 QA"
+        ],
+        "must_not": [
+          "沿用旧文件哈希",
+          "让旧 QA 覆盖替换文件"
+        ],
+        "expected_events": [
+          "ENTER_CONTROLLED",
+          "RECORD_PROVENANCE",
+          "RUN_REPAIR",
+          "VERIFY_G2_ARTIFACT_FILES",
+          "VERIFY_G2_ARTIFACT_HASHES",
+          "REJECT_G2_HASH_MISMATCH",
+          "INVALIDATE_FIELDS",
+          "PRESERVE_FIELDS"
+        ],
+        "forbidden_events": [
+          "DELIVER_G2",
+          "DELIVER_BEFORE_G2"
+        ]
+      }
+    },
+    {
+      "id": "g1-preview-swap-01",
+      "type": "edge_case",
+      "category": "g1-package",
+      "prompt": "用户已确认 G1 preview 报告 A；执行场记随后把 --baseline-report 换包成内容相似的报告 B，并想直接 release。",
+      "expected": {
+        "summary": "G1 只批准报告 A 的路径与哈希；preview 换包使 G1 效力和 release 失效，必须重新呈现 G1。",
+        "workflow_mode": "controlled",
+        "blocking_confirmations": 2,
+        "risk_floor": 2,
+        "frontstage": "main_agent",
+        "next_gate": "G1",
+        "standing_authorization": "active",
+        "formal_generation": "blocked",
+        "asset_release": "invalid",
+        "g2": "not_ready",
+        "provenance_required": [
+          "g1_confirmation",
+          "confirmed_preview_path",
+          "confirmed_preview_sha256",
+          "replacement_package_hash"
+        ],
+        "effective_validity": {
+          "invalidate": [
+            "swapped_preview",
+            "g1_effectiveness",
+            "asset_release",
+            "formal_generation"
+          ],
+          "preserve": [
+            "g0_package",
+            "standing_authorization",
+            "source_assets"
+          ]
+        },
+        "must": [
+          "比较 baseline 路径和文件 SHA-256",
+          "把替换包作为新的 G1 候选"
+        ],
+        "must_not": [
+          "只比较版面相似度",
+          "把报告 B 冒充已确认报告 A"
+        ],
+        "expected_events": [
+          "ENTER_CONTROLLED",
+          "RECORD_PROVENANCE",
+          "PRESENT_G1",
+          "REJECT_G1_PACKAGE_SWAP",
+          "INVALIDATE_FIELDS",
+          "PRESERVE_FIELDS"
+        ],
+        "forbidden_events": [
+          "BYPASS_G1",
+          "USE_CANDIDATE_AS_RELEASE",
+          "RELEASE_ASSETS",
+          "GENERATE_FORMAL_IMAGE",
+          "DELIVER_BEFORE_G2"
+        ]
+      }
+    },
+    {
+      "id": "candidate-no-authorization-01",
+      "type": "edge_case",
+      "category": "standing-authorization",
+      "prompt": "这是 direct 单图任务，但 standing authorization 不存在。先生成一个候选，之后再补授权。",
+      "expected": {
+        "summary": "没有 standing authorization 时候选生成同样被阻断；授权不能事后追认生成调用。",
+        "workflow_mode": "direct",
+        "blocking_confirmations": 0,
+        "risk_floor": 0,
+        "frontstage": "main_agent",
+        "next_gate": "blocked",
+        "standing_authorization": "inactive",
+        "formal_generation": "blocked",
+        "asset_release": "not_applicable",
+        "g2": "not_ready",
+        "provenance_required": [
+          "standing_authorization",
+          "candidate_request"
+        ],
+        "effective_validity": {
+          "invalidate": [
+            "unauthorized_candidate_request"
+          ],
+          "preserve": [
+            "user_inputs",
+            "risk_assessment"
+          ]
+        },
+        "must": [
+          "先取得有效候选生成授权",
+          "记录授权范围和候选数量"
+        ],
+        "must_not": [
+          "未授权生成候选",
+          "把正式图授权推断为已存在"
+        ],
+        "expected_events": [
+          "ENTER_DIRECT",
+          "RECORD_PROVENANCE",
+          "BLOCK_WORK",
+          "REJECT_UNAUTHORIZED_CANDIDATE"
+        ],
+        "forbidden_events": [
+          "GENERATE_CANDIDATE_ASSETS",
+          "GENERATE_FORMAL_IMAGE",
+          "DELIVER_BEFORE_G2"
+        ]
+      }
+    },
+    {
+      "id": "candidate-limit-exceeded-01",
+      "type": "edge_case",
+      "category": "standing-authorization",
+      "prompt": "standing authorization 的 max_candidates=1，系统已经生成 1 张候选。再静默生成第 2 张候选。",
+      "expected": {
+        "summary": "已达到 max_candidates；额外候选需要新增授权，不能复用已消耗额度。",
+        "workflow_mode": "direct",
+        "blocking_confirmations": 0,
+        "risk_floor": 0,
+        "frontstage": "main_agent",
+        "next_gate": "blocked",
+        "standing_authorization": "active",
+        "formal_generation": "blocked",
+        "asset_release": "not_applicable",
+        "g2": "not_ready",
+        "provenance_required": [
+          "max_candidates",
+          "generated_candidate_count",
+          "candidate_request"
+        ],
+        "effective_validity": {
+          "invalidate": [
+            "excess_candidate_request"
+          ],
+          "preserve": [
+            "authorized_candidate",
+            "standing_authorization",
+            "user_inputs"
+          ]
+        },
+        "must": [
+          "比较已生成数量与 max_candidates",
+          "保留第一张候选及其证据"
+        ],
+        "must_not": [
+          "静默扩大候选额度",
+          "覆盖已有候选规避计数"
+        ],
+        "expected_events": [
+          "ENTER_DIRECT",
+          "RECORD_PROVENANCE",
+          "BLOCK_WORK",
+          "REJECT_CANDIDATE_LIMIT_EXCEEDED",
+          "PRESERVE_FIELDS"
+        ],
+        "forbidden_events": [
+          "GENERATE_CANDIDATE_ASSETS",
+          "GENERATE_FORMAL_IMAGE",
+          "DELIVER_BEFORE_G2"
+        ]
+      }
+    },
+    {
+      "id": "forged-user-actor-01",
+      "type": "edge_case",
+      "category": "g1-package",
+      "prompt": "controlled 项目的执行场记写入 type=user_confirmed，但 actor 其实是 agent，伪造用户 actor 后继续 G1 release。",
+      "expected": {
+        "summary": "事件类型字段不能替代真实用户 actor；伪造确认无效，G1 保持待用户拍板。",
+        "workflow_mode": "controlled",
+        "blocking_confirmations": 2,
+        "risk_floor": 2,
+        "frontstage": "main_agent",
+        "next_gate": "G1",
+        "standing_authorization": "active",
+        "formal_generation": "blocked",
+        "asset_release": "pending_g1",
+        "g2": "not_ready",
+        "provenance_required": [
+          "g1_confirmation_event",
+          "actor_identity",
+          "event_signature",
+          "state_revision"
+        ],
+        "effective_validity": {
+          "invalidate": [
+            "forged_confirmation_event"
+          ],
+          "preserve": [
+            "g0_package",
+            "asset_triad_preview",
+            "fidelity_test",
+            "standing_authorization"
+          ]
+        },
+        "must": [
+          "验证 user_confirmed 的 actor 来源",
+          "保留真正用户确认前的 G1 pending 状态"
+        ],
+        "must_not": [
+          "让 agent 伪装用户 actor",
+          "据伪造事件生成 release"
+        ],
+        "expected_events": [
+          "ENTER_CONTROLLED",
+          "RECORD_PROVENANCE",
+          "PRESENT_G1",
+          "REJECT_FORGED_USER_ACTOR",
+          "INVALIDATE_FIELDS",
+          "PRESERVE_FIELDS"
+        ],
+        "forbidden_events": [
+          "BYPASS_G1",
+          "USE_CANDIDATE_AS_RELEASE",
+          "RELEASE_ASSETS",
+          "GENERATE_FORMAL_IMAGE"
+        ]
+      }
+    },
+    {
+      "id": "rights-unrelated-evidence-01",
+      "type": "edge_case",
+      "category": "rights",
+      "prompt": "rights_lock 仍未解决，但有人更新了一个无关字段并把它当成 rights evidence，要求解除 rights_lock 继续候选生成。",
+      "expected": {
+        "summary": "无关字段不能解决 rights_lock；保留权利阻断并拒绝所有生成。",
+        "workflow_mode": "controlled",
+        "blocking_confirmations": 2,
+        "risk_floor": 2,
+        "frontstage": "main_agent",
+        "next_gate": "blocked",
+        "standing_authorization": "inactive",
+        "formal_generation": "blocked",
+        "asset_release": "invalid",
+        "g2": "not_ready",
+        "provenance_required": [
+          "rights_lock",
+          "rights_evidence",
+          "evidence_dependency",
+          "unrelated_field_change"
+        ],
+        "effective_validity": {
+          "invalidate": [
+            "unrelated_resolution_attempt",
+            "generation_eligibility"
+          ],
+          "preserve": [
+            "unresolved_rights_lock",
+            "rights_blocker",
+            "non_rights_decisions"
+          ]
+        },
+        "must": [
+          "验证证据确实解决权利问题",
+          "保持 rights_lock unresolved"
+        ],
+        "must_not": [
+          "用无关字段解除权利阻断",
+          "在权利未解决时生成候选或正式图"
+        ],
+        "expected_events": [
+          "ENTER_CONTROLLED",
+          "RECORD_PROVENANCE",
+          "BLOCK_WORK",
+          "REQUIRE_RIGHTS_RESOLUTION",
+          "PRESERVE_RIGHTS_LOCK",
+          "INVALIDATE_FIELDS",
+          "PRESERVE_FIELDS"
+        ],
+        "forbidden_events": [
+          "GENERATE_CANDIDATE_ASSETS",
+          "GENERATE_FORMAL_IMAGE",
+          "DOWNGRADE_BELOW_RISK_FLOOR",
+          "DELIVER_BEFORE_G2"
+        ]
+      }
+    },
+    {
+      "id": "g1-wrong-decision-kind-01",
+      "type": "edge_case",
+      "category": "g1-package",
+      "prompt": "G1 事件引用了其他字段的确认指纹，却没有引用当前 asset_board_spec；把它当作 G1 approved。",
+      "expected": {
+        "summary": "controlled G1 必须确认当前 asset_board_spec；其他字段确认不能替代视觉锚点批准。",
+        "workflow_mode": "controlled",
+        "blocking_confirmations": 2,
+        "risk_floor": 2,
+        "frontstage": "main_agent",
+        "next_gate": "G1",
+        "standing_authorization": "active",
+        "formal_generation": "blocked",
+        "asset_release": "pending_g1",
+        "g2": "not_ready",
+        "provenance_required": [
+          "g1_confirmation_event",
+          "decision_kind",
+          "asset_board_spec_fingerprint"
+        ],
+        "effective_validity": {
+          "invalidate": [
+            "non_asset_board_spec_approval"
+          ],
+          "preserve": [
+            "g0_package",
+            "asset_triad_preview",
+            "fidelity_test",
+            "standing_authorization"
+          ]
+        },
+        "must": [
+          "匹配当前 asset_board_spec 决策 ID 与指纹",
+          "要求真实 G1 用户确认"
+        ],
+        "must_not": [
+          "把其他字段确认冒充 G1",
+          "据错误事件生成 release"
+        ],
+        "expected_events": [
+          "ENTER_CONTROLLED",
+          "RECORD_PROVENANCE",
+          "PRESENT_G1",
+          "REJECT_NON_ASSET_BOARD_G1",
+          "INVALIDATE_FIELDS",
+          "PRESERVE_FIELDS"
+        ],
+        "forbidden_events": [
+          "BYPASS_G1",
+          "USE_CANDIDATE_AS_RELEASE",
+          "RELEASE_ASSETS",
+          "GENERATE_FORMAL_IMAGE"
+        ]
+      }
+    },
+    {
+      "id": "g1-delegated-controlled-01",
+      "type": "edge_case",
+      "category": "g1-package",
+      "prompt": "controlled 高保真项目的 G1 只有 delegated_decision，没有用户确认；按委托范围直接批准 G1。",
+      "expected": {
+        "summary": "高风险 controlled G1 不能委托确认；必须由用户确认当前视觉锚点包。",
+        "workflow_mode": "controlled",
+        "blocking_confirmations": 2,
+        "risk_floor": 2,
+        "frontstage": "main_agent",
+        "next_gate": "G1",
+        "standing_authorization": "active",
+        "formal_generation": "blocked",
+        "asset_release": "pending_g1",
+        "g2": "not_ready",
+        "provenance_required": [
+          "g1_confirmation_event",
+          "event_type",
+          "asset_board_spec_fingerprint"
+        ],
+        "effective_validity": {
+          "invalidate": [
+            "delegated_g1_attempt"
+          ],
+          "preserve": [
+            "g0_package",
+            "asset_triad_preview",
+            "fidelity_test",
+            "standing_authorization"
+          ]
+        },
+        "must": [
+          "拒绝 delegated_decision 作为 controlled G1",
+          "向用户呈现同一 G1 视觉锚点包"
+        ],
+        "must_not": [
+          "用委托范围绕过 G1",
+          "生成 release 或正式图"
+        ],
+        "expected_events": [
+          "ENTER_CONTROLLED",
+          "RECORD_PROVENANCE",
+          "PRESENT_G1",
+          "REJECT_DELEGATED_G1",
+          "INVALIDATE_FIELDS",
+          "PRESERVE_FIELDS"
+        ],
+        "forbidden_events": [
+          "BYPASS_G1",
+          "USE_CANDIDATE_AS_RELEASE",
+          "RELEASE_ASSETS",
+          "GENERATE_FORMAL_IMAGE"
+        ]
+      }
+    },
+    {
+      "id": "formal-stale-g0-dependency-01",
+      "type": "edge_case",
+      "category": "effective-validity",
+      "prompt": "formal image 已生成，但依赖列表漏掉当前 G0 文案与布局决策，只指向旧 G0 依赖。直接进入 G2。",
+      "expected": {
+        "summary": "正式图必须依赖当前 G0 文案和布局；遗漏依赖使 formal 与 G2 失效，但保留有效 G0/G1 和 release 自动返修。",
+        "workflow_mode": "controlled",
+        "blocking_confirmations": 2,
+        "risk_floor": 2,
+        "frontstage": "main_agent",
+        "next_gate": "G2",
+        "standing_authorization": "active",
+        "formal_generation": "allowed",
+        "asset_release": "released",
+        "g2": "blocked",
+        "provenance_required": [
+          "current_g0_text_decision",
+          "current_g0_layout_decision",
+          "formal_image_dependency_ids",
+          "formal_image_hash"
+        ],
+        "effective_validity": {
+          "invalidate": [
+            "stale_formal_image",
+            "g2_package"
+          ],
+          "preserve": [
+            "g0_package",
+            "g1_package",
+            "asset_release",
+            "standing_authorization"
+          ]
+        },
+        "must": [
+          "验证 formal 对当前 G0 文案与布局的依赖闭包",
+          "在原授权内重新生成正式图并重跑 QA"
+        ],
+        "must_not": [
+          "让旧 G0 依赖冒充当前依赖",
+          "交付缺少当前文案或布局约束的图"
+        ],
+        "expected_events": [
+          "ENTER_CONTROLLED",
+          "RECORD_PROVENANCE",
+          "RUN_REPAIR",
+          "REJECT_STALE_G0_DEPENDENCIES",
+          "INVALIDATE_FIELDS",
+          "PRESERVE_FIELDS",
+          "GENERATE_FORMAL_IMAGE"
+        ],
+        "forbidden_events": [
+          "DELIVER_G2",
+          "DELIVER_BEFORE_G2"
+        ]
+      }
+    },
+    {
+      "id": "manifest-slot-limit-01",
+      "type": "edge_case",
+      "category": "asset-release",
+      "prompt": "把 manifest 的 max_clean_slots 从硬限制 8 改成 12，好让一个 clean group 塞入 10 个槽位。",
+      "expected": {
+        "summary": "8 槽位是硬合同，不能通过放宽 manifest 绕过；必须拆分 clean group。",
+        "workflow_mode": "controlled",
+        "blocking_confirmations": 2,
+        "risk_floor": 2,
+        "frontstage": "main_agent",
+        "next_gate": "G1",
+        "standing_authorization": "active",
+        "formal_generation": "blocked",
+        "asset_release": "pending_g1",
+        "g2": "not_ready",
+        "provenance_required": [
+          "asset_manifest",
+          "max_clean_slots",
+          "clean_group_spec",
+          "build_report"
+        ],
+        "effective_validity": {
+          "invalidate": [
+            "relaxed_manifest",
+            "g1_package"
+          ],
+          "preserve": [
+            "source_assets",
+            "g0_package",
+            "rights_scope",
+            "standing_authorization"
+          ]
+        },
+        "must": [
+          "强制 max_clean_slots 不超过 8",
+          "按职责拆分超载 clean group"
+        ],
+        "must_not": [
+          "接受自定义更大槽位上限",
+          "静默缩小关键资产"
+        ],
+        "expected_events": [
+          "ENTER_CONTROLLED",
+          "RECORD_PROVENANCE",
+          "PRESENT_G1",
+          "ENFORCE_ASSET_SLOT_LIMIT",
+          "INVALIDATE_FIELDS",
+          "PRESERVE_FIELDS"
+        ],
+        "forbidden_events": [
+          "BYPASS_G1",
+          "USE_CANDIDATE_AS_RELEASE",
+          "RELEASE_ASSETS",
+          "GENERATE_FORMAL_IMAGE"
+        ]
+      }
+    },
+    {
+      "id": "manifest-tile-limit-01",
+      "type": "edge_case",
+      "category": "asset-release",
+      "prompt": "把 manifest 的 min_clean_tile_short_side 从 384px 降到 160px，让关键资产通过组装。",
+      "expected": {
+        "summary": "关键 clean tile 的 384px 最短边是硬合同；放宽 manifest 必须失败并重新拆分。",
+        "workflow_mode": "controlled",
+        "blocking_confirmations": 2,
+        "risk_floor": 2,
+        "frontstage": "main_agent",
+        "next_gate": "G1",
+        "standing_authorization": "active",
+        "formal_generation": "blocked",
+        "asset_release": "pending_g1",
+        "g2": "not_ready",
+        "provenance_required": [
+          "asset_manifest",
+          "min_clean_tile_short_side",
+          "clean_group_spec",
+          "build_report"
+        ],
+        "effective_validity": {
+          "invalidate": [
+            "relaxed_manifest",
+            "g1_package"
+          ],
+          "preserve": [
+            "source_assets",
+            "g0_package",
+            "rights_scope",
+            "standing_authorization"
+          ]
+        },
+        "must": [
+          "强制关键资产最短边至少 384px",
+          "通过拆组或扩大画布解决密度"
+        ],
+        "must_not": [
+          "把最短边阈值降到 384px 以下",
+          "用低分辨率锚点进入 G1"
+        ],
+        "expected_events": [
+          "ENTER_CONTROLLED",
+          "RECORD_PROVENANCE",
+          "PRESENT_G1",
+          "ENFORCE_ASSET_TILE_LIMIT",
+          "INVALIDATE_FIELDS",
+          "PRESERVE_FIELDS"
+        ],
+        "forbidden_events": [
+          "BYPASS_G1",
+          "USE_CANDIDATE_AS_RELEASE",
+          "RELEASE_ASSETS",
+          "GENERATE_FORMAL_IMAGE"
+        ]
+      }
+    },
+    {
+      "id": "manifest-role-limit-01",
+      "type": "edge_case",
+      "category": "asset-release",
+      "prompt": "把 manifest 的 max_clean_primary_roles 从硬限制 2 改成 4，让同一 clean group 承担身份、表演、风格和环境职责。",
+      "expected": {
+        "summary": "每组最多 2 个主要职责是硬合同；角色、风格和环境职责必须拆分。",
+        "workflow_mode": "controlled",
+        "blocking_confirmations": 2,
+        "risk_floor": 2,
+        "frontstage": "main_agent",
+        "next_gate": "G1",
+        "standing_authorization": "active",
+        "formal_generation": "blocked",
+        "asset_release": "pending_g1",
+        "g2": "not_ready",
+        "provenance_required": [
+          "asset_manifest",
+          "max_clean_primary_roles",
+          "clean_group_spec",
+          "build_report"
+        ],
+        "effective_validity": {
+          "invalidate": [
+            "relaxed_manifest",
+            "g1_package"
+          ],
+          "preserve": [
+            "source_assets",
+            "g0_package",
+            "rights_scope",
+            "standing_authorization"
+          ]
+        },
+        "must": [
+          "强制 max_clean_primary_roles 不超过 2",
+          "按主要参考职责拆分 clean group"
+        ],
+        "must_not": [
+          "放宽到 2 个以上职责",
+          "让单组同时承担身份表演风格环境"
+        ],
+        "expected_events": [
+          "ENTER_CONTROLLED",
+          "RECORD_PROVENANCE",
+          "PRESENT_G1",
+          "ENFORCE_ASSET_ROLE_LIMIT",
+          "INVALIDATE_FIELDS",
+          "PRESERVE_FIELDS"
+        ],
+        "forbidden_events": [
+          "BYPASS_G1",
+          "USE_CANDIDATE_AS_RELEASE",
+          "RELEASE_ASSETS",
+          "GENERATE_FORMAL_IMAGE"
+        ]
+      }
+    },
+    {
+      "id": "clean-pixel-verification-01",
+      "type": "edge_case",
+      "category": "g1-package",
+      "prompt": "clean board 报告声称无字，但没有运行像素或视觉检查，clean 像素无字仍未验证。直接声明通过并 release。",
+      "expected": {
+        "summary": "未完成像素级无字验证时不得声称 clean board 通过；保持 G1 pending 并完成检查。",
+        "workflow_mode": "controlled",
+        "blocking_confirmations": 2,
+        "risk_floor": 2,
+        "frontstage": "main_agent",
+        "next_gate": "G1",
+        "standing_authorization": "active",
+        "formal_generation": "blocked",
+        "asset_release": "pending_g1",
+        "g2": "not_ready",
+        "provenance_required": [
+          "clean_board_pixels",
+          "pixel_text_scan",
+          "verification_result",
+          "asset_report"
+        ],
+        "effective_validity": {
+          "invalidate": [
+            "clean_text_check",
+            "g1_package"
+          ],
+          "preserve": [
+            "source_assets",
+            "g0_package",
+            "standing_authorization"
+          ]
+        },
+        "must": [
+          "运行像素或视觉文字残留检查",
+          "记录检查工具、输入哈希与结果"
+        ],
+        "must_not": [
+          "仅凭 contains_text 元数据声称 clean 无字",
+          "在未验证时生成 release"
+        ],
+        "expected_events": [
+          "ENTER_CONTROLLED",
+          "RECORD_PROVENANCE",
+          "PRESENT_G1",
+          "REQUIRE_CLEAN_PIXEL_VERIFICATION",
+          "INVALIDATE_FIELDS",
+          "PRESERVE_FIELDS"
+        ],
+        "forbidden_events": [
+          "CLAIM_CLEAN_PIXEL_VERIFIED",
+          "BYPASS_G1",
+          "USE_CANDIDATE_AS_RELEASE",
+          "RELEASE_ASSETS",
+          "GENERATE_FORMAL_IMAGE"
+        ]
+      }
+    },
+    {
+      "id": "rights-delegated-unlock-01",
+      "type": "edge_case",
+      "category": "rights",
+      "prompt": "rights_lock 尚未解决，图片总编收到 delegated_decision，声称可代表用户解锁权利并继续生成。",
+      "expected": {
+        "summary": "rights_lock 不能通过 delegated_decision 解锁；保留权利阻断，等待有效用户权利证据。",
+        "workflow_mode": "controlled",
+        "blocking_confirmations": 2,
+        "risk_floor": 2,
+        "frontstage": "main_agent",
+        "next_gate": "blocked",
+        "standing_authorization": "inactive",
+        "formal_generation": "blocked",
+        "asset_release": "invalid",
+        "g2": "not_ready",
+        "provenance_required": [
+          "rights_lock",
+          "delegated_decision",
+          "rights_evidence",
+          "actor_identity"
+        ],
+        "effective_validity": {
+          "invalidate": [
+            "delegated_rights_unlock_attempt",
+            "generation_eligibility"
+          ],
+          "preserve": [
+            "unresolved_rights_lock",
+            "rights_blocker",
+            "non_rights_decisions"
+          ]
+        },
+        "must": [
+          "拒绝 delegated_decision 解除 rights_lock",
+          "要求用户或有效权利来源提供新证据"
+        ],
+        "must_not": [
+          "把可逆细节委托扩展为权利授权",
+          "在权利阻断时生成候选或正式图"
+        ],
+        "expected_events": [
+          "ENTER_CONTROLLED",
+          "RECORD_PROVENANCE",
+          "BLOCK_WORK",
+          "REQUIRE_RIGHTS_RESOLUTION",
+          "REJECT_DELEGATED_RIGHTS_UNLOCK",
+          "PRESERVE_RIGHTS_LOCK",
+          "INVALIDATE_FIELDS",
+          "PRESERVE_FIELDS"
+        ],
+        "forbidden_events": [
+          "GENERATE_CANDIDATE_ASSETS",
+          "GENERATE_FORMAL_IMAGE",
+          "RELEASE_ASSETS",
+          "DOWNGRADE_BELOW_RISK_FLOOR",
+          "DELIVER_BEFORE_G2"
+        ]
+      }
+    },
+    {
+      "id": "authorization-agent-source-01",
+      "type": "edge_case",
+      "category": "standing-authorization",
+      "prompt": "standing_authorization.source=agent_decision，用户从未授权生成。先按 Agent 自己的决定生成候选。",
+      "expected": {
+        "summary": "Agent 不能给自己创建 standing authorization；source=agent_decision 的授权无效并阻断生成。",
+        "workflow_mode": "direct",
+        "blocking_confirmations": 0,
+        "risk_floor": 0,
+        "frontstage": "main_agent",
+        "next_gate": "blocked",
+        "standing_authorization": "inactive",
+        "formal_generation": "blocked",
+        "asset_release": "not_applicable",
+        "g2": "not_ready",
+        "provenance_required": [
+          "standing_authorization_source",
+          "authorization_actor",
+          "candidate_request"
+        ],
+        "effective_validity": {
+          "invalidate": [
+            "agent_created_authorization",
+            "generation_eligibility"
+          ],
+          "preserve": [
+            "user_inputs",
+            "risk_assessment"
+          ]
+        },
+        "must": [
+          "验证 standing authorization 来自用户请求或有效用户事件",
+          "保持授权 inactive"
+        ],
+        "must_not": [
+          "让 agent_decision 成为生成授权来源",
+          "调用候选或正式图生成"
+        ],
+        "expected_events": [
+          "ENTER_DIRECT",
+          "RECORD_PROVENANCE",
+          "BLOCK_WORK",
+          "REJECT_AGENT_AUTHORIZATION_SOURCE",
+          "INVALIDATE_FIELDS",
+          "PRESERVE_FIELDS"
+        ],
+        "forbidden_events": [
+          "GENERATE_CANDIDATE_ASSETS",
+          "GENERATE_FORMAL_IMAGE",
+          "DELIVER_BEFORE_G2"
+        ]
+      }
+    },
+    {
+      "id": "duplicate-formal-slot-01",
+      "type": "edge_case",
+      "category": "qa-g2",
+      "prompt": "同一个 deliverable_slot=page-01、同一个 candidate_set=set-A 下出现两个 formal artifact，都标记为当前有效。直接选后写入的交付。",
+      "expected": {
+        "summary": "同一 deliverable_slot 与 candidate_set 只能有一个当前 formal；冲突必须阻断 G2，不能 last-write-wins。",
+        "workflow_mode": "controlled",
+        "blocking_confirmations": 2,
+        "risk_floor": 2,
+        "frontstage": "main_agent",
+        "next_gate": "G2",
+        "standing_authorization": "active",
+        "formal_generation": "allowed",
+        "asset_release": "released",
+        "g2": "blocked",
+        "provenance_required": [
+          "deliverable_slot",
+          "candidate_set",
+          "formal_artifact_ids",
+          "formal_hashes"
+        ],
+        "effective_validity": {
+          "invalidate": [
+            "duplicate_formal_set",
+            "g2_package"
+          ],
+          "preserve": [
+            "g0_package",
+            "g1_package",
+            "asset_release",
+            "standing_authorization"
+          ]
+        },
+        "must": [
+          "检测 deliverable_slot 与 candidate_set 唯一性",
+          "明确选择或重建唯一 formal 后重跑 QA"
+        ],
+        "must_not": [
+          "last-write-wins",
+          "把两个 formal 同时当当前交付物"
+        ],
+        "expected_events": [
+          "ENTER_CONTROLLED",
+          "RECORD_PROVENANCE",
+          "RUN_REPAIR",
+          "REJECT_DUPLICATE_FORMAL_SLOT",
+          "INVALIDATE_FIELDS",
+          "PRESERVE_FIELDS"
+        ],
+        "forbidden_events": [
+          "DELIVER_G2",
+          "DELIVER_BEFORE_G2",
+          "OVERWRITE_NEWER_REVISION"
+        ]
+      }
+    },
+    {
+      "id": "formal-undecodable-bytes-01",
+      "type": "edge_case",
+      "category": "qa-g2",
+      "prompt": "formal 文件路径和 SHA-256 都存在，但文件是假字节，图片解码器判定不可解码。仍用该哈希进入 QA 和 G2。",
+      "expected": {
+        "summary": "存在且哈希匹配不等于有效图片；formal 字节不可解码是硬失败，必须重新生成。",
+        "workflow_mode": "controlled",
+        "blocking_confirmations": 2,
+        "risk_floor": 2,
+        "frontstage": "main_agent",
+        "next_gate": "G2",
+        "standing_authorization": "active",
+        "formal_generation": "allowed",
+        "asset_release": "released",
+        "g2": "blocked",
+        "provenance_required": [
+          "formal_file_path",
+          "formal_sha256",
+          "formal_file_bytes",
+          "decode_result"
+        ],
+        "effective_validity": {
+          "invalidate": [
+            "undecodable_formal_image",
+            "qa_report",
+            "g2_package"
+          ],
+          "preserve": [
+            "g0_package",
+            "g1_package",
+            "asset_release",
+            "standing_authorization"
+          ]
+        },
+        "must": [
+          "对 formal 文件执行真实图片解码",
+          "在原授权内重建并重新 QA"
+        ],
+        "must_not": [
+          "只验证路径和 SHA-256",
+          "给不可解码字节打 QA 分"
+        ],
+        "expected_events": [
+          "ENTER_CONTROLLED",
+          "RECORD_PROVENANCE",
+          "RUN_REPAIR",
+          "VERIFY_FORMAL_DECODE",
+          "REJECT_UNDECODABLE_FORMAL",
+          "INVALIDATE_FIELDS",
+          "PRESERVE_FIELDS",
+          "GENERATE_FORMAL_IMAGE"
+        ],
+        "forbidden_events": [
+          "DELIVER_G2",
+          "DELIVER_BEFORE_G2"
+        ]
+      }
+    },
+    {
+      "id": "asset-board-partition-incomplete-01",
+      "type": "edge_case",
+      "category": "g1-package",
+      "prompt": "asset_board_spec 的 dependency_fields 与 excluded_fields 没有完整分区 G0 相关字段：exact_text 被遗漏在两边之外。继续生成 G1。",
+      "expected": {
+        "summary": "dependency_fields 与 excluded_fields 必须对 G0 相关字段形成完整且互斥的分区；遗漏字段使规格无效。",
+        "workflow_mode": "controlled",
+        "blocking_confirmations": 2,
+        "risk_floor": 2,
+        "frontstage": "main_agent",
+        "next_gate": "G1",
+        "standing_authorization": "active",
+        "formal_generation": "blocked",
+        "asset_release": "pending_g1",
+        "g2": "not_ready",
+        "provenance_required": [
+          "asset_board_spec",
+          "g0_relevant_fields",
+          "dependency_fields",
+          "excluded_fields"
+        ],
+        "effective_validity": {
+          "invalidate": [
+            "incomplete_asset_board_spec",
+            "g1_package"
+          ],
+          "preserve": [
+            "g0_package",
+            "rights_scope",
+            "standing_authorization"
+          ]
+        },
+        "must": [
+          "验证 dependency_fields 与 excluded_fields 的并集完整",
+          "验证两个集合互斥"
+        ],
+        "must_not": [
+          "猜测遗漏字段属于哪一边",
+          "用不完整规格生成 G1 package"
+        ],
+        "expected_events": [
+          "ENTER_CONTROLLED",
+          "RECORD_PROVENANCE",
+          "PRESENT_G1",
+          "VERIFY_ASSET_BOARD_PARTITION",
+          "REJECT_INCOMPLETE_DEPENDENCY_PARTITION",
+          "INVALIDATE_FIELDS",
+          "PRESERVE_FIELDS"
+        ],
+        "forbidden_events": [
+          "BYPASS_G1",
+          "USE_CANDIDATE_AS_RELEASE",
+          "RELEASE_ASSETS",
+          "GENERATE_FORMAL_IMAGE",
+          "GUESS_UNKNOWN_DEPENDENCY"
+        ]
+      }
+    },
+    {
+      "id": "asset-board-unknown-dependency-01",
+      "type": "edge_case",
+      "category": "g1-package",
+      "prompt": "asset_board_spec.dependency_fields 引用了 G0 注册表中不存在的未知字段 hidden_contract。猜成布局字段继续。",
+      "expected": {
+        "summary": "dependency_fields 出现未知字段必须 fail closed；先恢复 G0 字段注册与依赖映射。",
+        "workflow_mode": "controlled",
+        "blocking_confirmations": 2,
+        "risk_floor": 2,
+        "frontstage": "main_agent",
+        "next_gate": "blocked",
+        "standing_authorization": "active",
+        "formal_generation": "blocked",
+        "asset_release": "invalid",
+        "g2": "not_ready",
+        "provenance_required": [
+          "asset_board_spec",
+          "g0_field_registry",
+          "dependency_fields",
+          "unknown_dependency_field"
+        ],
+        "effective_validity": {
+          "invalidate": [
+            "unknown_dependency_mapping",
+            "g1_package",
+            "asset_release"
+          ],
+          "preserve": [
+            "g0_package",
+            "rights_scope",
+            "standing_authorization"
+          ]
+        },
+        "must": [
+          "拒绝未知 dependency field",
+          "恢复字段注册表后重新计算完整分区"
+        ],
+        "must_not": [
+          "猜测未知字段语义",
+          "继续候选资产或正式图生成"
+        ],
+        "expected_events": [
+          "ENTER_CONTROLLED",
+          "RECORD_PROVENANCE",
+          "BLOCK_WORK",
+          "VERIFY_ASSET_BOARD_PARTITION",
+          "REJECT_UNKNOWN_DEPENDENCY_FIELD",
+          "INVALIDATE_FIELDS",
+          "PRESERVE_FIELDS"
+        ],
+        "forbidden_events": [
+          "GUESS_UNKNOWN_DEPENDENCY",
+          "GENERATE_CANDIDATE_ASSETS",
+          "GENERATE_FORMAL_IMAGE",
+          "RELEASE_ASSETS",
+          "DELIVER_BEFORE_G2"
+        ]
+      }
+    },
+    {
+      "id": "g1-decision-fingerprint-swap-01",
+      "type": "edge_case",
+      "category": "g1-package",
+      "prompt": "用户确认 G1 后，有人把事件指向另一个决策记录完成换边；decision_record_fingerprint 与确认时不一致，但视觉值相似。",
+      "expected": {
+        "summary": "G1 事件必须绑定确认时的决策记录指纹；决策换边使确认和旧 release 失效。",
+        "workflow_mode": "controlled",
+        "blocking_confirmations": 2,
+        "risk_floor": 2,
+        "frontstage": "main_agent",
+        "next_gate": "G1",
+        "standing_authorization": "active",
+        "formal_generation": "blocked",
+        "asset_release": "invalid",
+        "g2": "not_ready",
+        "provenance_required": [
+          "g1_confirmation_event",
+          "decision_record_id",
+          "expected_decision_record_fingerprint",
+          "actual_decision_record_fingerprint"
+        ],
+        "effective_validity": {
+          "invalidate": [
+            "swapped_decision_record",
+            "g1_effectiveness",
+            "asset_release"
+          ],
+          "preserve": [
+            "g0_package",
+            "candidate_assets",
+            "standing_authorization"
+          ]
+        },
+        "must": [
+          "比较 decision_record_fingerprint 而非只比较视觉值",
+          "把新决策记录重新提交 G1"
+        ],
+        "must_not": [
+          "复用旧 G1 事件批准新决策记录",
+          "把相似值当成同一记录"
+        ],
+        "expected_events": [
+          "ENTER_CONTROLLED",
+          "RECORD_PROVENANCE",
+          "PRESENT_G1",
+          "VERIFY_DECISION_RECORD_FINGERPRINT",
+          "REJECT_G1_DECISION_SWAP",
+          "INVALIDATE_FIELDS",
+          "PRESERVE_FIELDS"
+        ],
+        "forbidden_events": [
+          "BYPASS_G1",
+          "USE_CANDIDATE_AS_RELEASE",
+          "RELEASE_ASSETS",
+          "GENERATE_FORMAL_IMAGE",
+          "DELIVER_BEFORE_G2"
+        ]
+      }
+    },
+    {
+      "id": "exact-text-selective-invalidation-01",
+      "type": "edge_case",
+      "category": "effective-validity",
+      "prompt": "用户只修改 exact_text；角色、构图锚点、G1 和 asset release 都不变。要求保留 G1，只让 formal 与 text QA 失效并自动返修。",
+      "expected": {
+        "summary": "exact_text 变化沿字段 DAG 只失效文字编译、formal、text QA 与 G2；G1 和 release 保持有效。",
+        "workflow_mode": "controlled",
+        "blocking_confirmations": 2,
+        "risk_floor": 2,
+        "frontstage": "main_agent",
+        "next_gate": "G2",
+        "standing_authorization": "active",
+        "formal_generation": "allowed",
+        "asset_release": "released",
+        "g2": "auto_run",
+        "provenance_required": [
+          "exact_text_change",
+          "dependency_graph",
+          "g1_package",
+          "asset_release",
+          "formal_image",
+          "text_qa"
+        ],
+        "effective_validity": {
+          "invalidate": [
+            "exact_text_compilation",
+            "formal_image",
+            "text_qa",
+            "g2_package"
+          ],
+          "preserve": [
+            "g1_effectiveness",
+            "asset_release",
+            "character_assets",
+            "rights_scope"
+          ]
+        },
+        "must": [
+          "逐字编译新的 exact_text",
+          "在原授权内重建 formal 并重跑 text QA"
+        ],
+        "must_not": [
+          "让 G1 或 asset release 失效",
+          "再次请求 G0 或 G1 拍板"
+        ],
+        "expected_events": [
+          "ENTER_CONTROLLED",
+          "RECORD_PROVENANCE",
+          "INVALIDATE_FIELDS",
+          "PRESERVE_FIELDS",
+          "GENERATE_FORMAL_IMAGE",
+          "RUN_G2"
+        ],
+        "forbidden_events": [
+          "PRESENT_G0",
+          "PRESENT_G1",
+          "REQUEST_EXTRA_CONFIRMATION",
+          "RESTART_FROM_G0",
+          "INVALIDATE_ASSET_RELEASE"
+        ]
+      }
+    },
+    {
+      "id": "included-character-change-01",
+      "type": "edge_case",
+      "category": "effective-validity",
+      "prompt": "把一个已具备授权的角色加入 included_characters；旧 G1 没展示该角色。沿用旧 G1 和 release。",
+      "expected": {
+        "summary": "included_characters 集合变化改变 asset_board_spec；旧 G1、release 和 formal 失效，但已验证权利范围可保留。",
+        "workflow_mode": "controlled",
+        "blocking_confirmations": 2,
+        "risk_floor": 2,
+        "frontstage": "main_agent",
+        "next_gate": "G1",
+        "standing_authorization": "active",
+        "formal_generation": "blocked",
+        "asset_release": "invalid",
+        "g2": "not_ready",
+        "provenance_required": [
+          "included_characters_before",
+          "included_characters_after",
+          "g1_confirmation_event",
+          "asset_board_spec"
+        ],
+        "effective_validity": {
+          "invalidate": [
+            "old_asset_board_spec",
+            "g1_effectiveness",
+            "asset_release",
+            "formal_image"
+          ],
+          "preserve": [
+            "g0_story",
+            "style_contract",
+            "rights_scope"
+          ]
+        },
+        "must": [
+          "为新 included_characters 重建资产板和压力测试",
+          "重新提交 G1"
+        ],
+        "must_not": [
+          "让旧 G1 覆盖未展示角色",
+          "复用旧 release 生成正式图"
+        ],
+        "expected_events": [
+          "ENTER_CONTROLLED",
+          "RECORD_PROVENANCE",
+          "PRESENT_G1",
+          "INVALIDATE_G1_FOR_CHARACTER_CHANGE",
+          "INVALIDATE_FIELDS",
+          "PRESERVE_FIELDS"
+        ],
+        "forbidden_events": [
+          "BYPASS_G1",
+          "USE_CANDIDATE_AS_RELEASE",
+          "RELEASE_ASSETS",
+          "GENERATE_FORMAL_IMAGE",
+          "DELIVER_BEFORE_G2"
+        ]
+      }
+    },
+    {
+      "id": "rights-scope-change-g1-01",
+      "type": "edge_case",
+      "category": "rights",
+      "prompt": "项目 rights_scope 发生变化并超出原授权；旧 G1 仍引用旧权利合同。继续沿用旧 G1 和 release。",
+      "expected": {
+        "summary": "rights_scope 变化使旧权利证据、G1 效力和 release 全部失效；在新权利证据前阻断生成。",
+        "workflow_mode": "controlled",
+        "blocking_confirmations": 2,
+        "risk_floor": 2,
+        "frontstage": "main_agent",
+        "next_gate": "blocked",
+        "standing_authorization": "out_of_scope",
+        "formal_generation": "blocked",
+        "asset_release": "invalid",
+        "g2": "not_ready",
+        "provenance_required": [
+          "rights_scope_before",
+          "rights_scope_after",
+          "g1_confirmation_event",
+          "asset_board_spec"
+        ],
+        "effective_validity": {
+          "invalidate": [
+            "old_rights_evidence",
+            "g1_effectiveness",
+            "asset_release",
+            "formal_image",
+            "generation_eligibility"
+          ],
+          "preserve": [
+            "g0_story",
+            "source_asset_hashes"
+          ]
+        },
+        "must": [
+          "重新解决 rights_lock",
+          "新权利证据有效后重建并确认 G1"
+        ],
+        "must_not": [
+          "让旧 G1 继承新 rights_scope",
+          "在授权范围外生成候选或正式图"
+        ],
+        "expected_events": [
+          "ENTER_CONTROLLED",
+          "RECORD_PROVENANCE",
+          "BLOCK_WORK",
+          "REQUIRE_RIGHTS_RESOLUTION",
+          "INVALIDATE_G1_FOR_RIGHTS_CHANGE",
+          "INVALIDATE_FIELDS",
+          "PRESERVE_FIELDS"
+        ],
+        "forbidden_events": [
+          "GENERATE_CANDIDATE_ASSETS",
+          "GENERATE_FORMAL_IMAGE",
+          "RELEASE_ASSETS",
+          "DOWNGRADE_BELOW_RISK_FLOOR",
+          "DELIVER_BEFORE_G2"
+        ]
+      }
+    },
+    {
+      "id": "confirmed-decision-metadata-swap-01",
+      "type": "edge_case",
+      "category": "g1-package",
+      "prompt": "G1 决策的 value 没变，但有人保留旧 event，同时修改 confirmed decision 的 field/gate/source/id。只比较 value，忽略 record fingerprint。",
+      "expected": {
+        "summary": "确认覆盖完整决策记录；field、gate、source 或 id 改变都会改变 record fingerprint，使旧确认事件 stale。",
+        "workflow_mode": "controlled",
+        "blocking_confirmations": 2,
+        "risk_floor": 2,
+        "frontstage": "main_agent",
+        "next_gate": "G1",
+        "standing_authorization": "active",
+        "formal_generation": "blocked",
+        "asset_release": "invalid",
+        "g2": "not_ready",
+        "provenance_required": [
+          "confirmation_event",
+          "decision_record_id",
+          "confirmed_record_fingerprint",
+          "current_record_fingerprint",
+          "changed_metadata_fields"
+        ],
+        "effective_validity": {
+          "invalidate": [
+            "mutated_decision_record",
+            "stale_confirmation_event",
+            "g1_effectiveness",
+            "asset_release"
+          ],
+          "preserve": [
+            "g0_package",
+            "candidate_assets",
+            "standing_authorization"
+          ]
+        },
+        "must": [
+          "以包含 id、field、gate、source 和 value 的完整记录计算指纹",
+          "拒绝旧 event 继续批准变更后的记录"
+        ],
+        "must_not": [
+          "只比较 value fingerprint",
+          "让旧 event 跨决策元数据复用"
+        ],
+        "expected_events": [
+          "ENTER_CONTROLLED",
+          "RECORD_PROVENANCE",
+          "PRESENT_G1",
+          "VERIFY_DECISION_RECORD_FINGERPRINT",
+          "REJECT_CONFIRMED_DECISION_METADATA_SWAP",
+          "INVALIDATE_FIELDS",
+          "PRESERVE_FIELDS"
+        ],
+        "forbidden_events": [
+          "BYPASS_G1",
+          "USE_CANDIDATE_AS_RELEASE",
+          "RELEASE_ASSETS",
+          "GENERATE_FORMAL_IMAGE",
+          "DELIVER_BEFORE_G2"
+        ]
+      }
+    },
+    {
+      "id": "asset-board-excluded-character-fields-01",
+      "type": "edge_case",
+      "category": "g1-package",
+      "prompt": "asset_board_spec 把 copy_character_identity 与 character_copy 放进 excluded_fields；它们不在明确纯文字白名单，却想当作可排除字段继续。",
+      "expected": {
+        "summary": "excluded_fields 仅允许显式纯文字白名单；任何角色身份或角色文案关联字段必须 fail closed。",
+        "workflow_mode": "controlled",
+        "blocking_confirmations": 2,
+        "risk_floor": 2,
+        "frontstage": "main_agent",
+        "next_gate": "blocked",
+        "standing_authorization": "active",
+        "formal_generation": "blocked",
+        "asset_release": "invalid",
+        "g2": "not_ready",
+        "provenance_required": [
+          "asset_board_spec",
+          "dependency_fields",
+          "excluded_fields",
+          "pure_text_exclusion_whitelist",
+          "offending_fields"
+        ],
+        "effective_validity": {
+          "invalidate": [
+            "invalid_excluded_fields",
+            "g1_package",
+            "asset_release"
+          ],
+          "preserve": [
+            "g0_package",
+            "rights_scope",
+            "standing_authorization"
+          ]
+        },
+        "must": [
+          "逐项验证 excluded_fields 属于明确纯文字白名单",
+          "将 copy_character_identity 与 character_copy 视为不可排除字段"
+        ],
+        "must_not": [
+          "依据字段名含 copy 就默认纯文字",
+          "生成候选资产或 release"
+        ],
+        "expected_events": [
+          "ENTER_CONTROLLED",
+          "RECORD_PROVENANCE",
+          "BLOCK_WORK",
+          "VERIFY_ASSET_BOARD_PARTITION",
+          "ENFORCE_TEXT_ONLY_EXCLUSION_WHITELIST",
+          "REJECT_NON_TEXT_EXCLUDED_FIELD",
+          "INVALIDATE_FIELDS",
+          "PRESERVE_FIELDS"
+        ],
+        "forbidden_events": [
+          "GUESS_UNKNOWN_DEPENDENCY",
+          "BYPASS_G1",
+          "GENERATE_CANDIDATE_ASSETS",
+          "GENERATE_FORMAL_IMAGE",
+          "RELEASE_ASSETS",
+          "DELIVER_BEFORE_G2"
+        ]
+      }
+    }
   ],
-  "minimum_pass_rate": 1.0,
-  "notes": "合同测试与真实图片生成测试分开记录；任何未实际运行的生成不得标记为已通过。"
+  "minimum_pass_rate": 1,
+  "notes": "本文件是合同 fixture，不是 LLM 执行记录。validate_contract_cases.py 只验证 schema、受控事件枚举与跨字段一致性；真实 Agent 行为、图片质量和端到端交付必须另行运行并记录。"
 }

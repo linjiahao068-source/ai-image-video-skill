@@ -1,0 +1,121 @@
+{
+  "schema_version": "5.3",
+  "project_id": "replace-me",
+  "state_revision": 1,
+  "status": "blocked",
+  "current_internal_stage": 4,
+  "workflow_mode": "controlled",
+  "generation_route": "stable",
+  "review_mode": "adaptive",
+  "risk_modules": {
+    "semantic_lock": {"level": "medium", "status": "resolved", "evidence": ["DEC-G0-CREATIVE"]},
+    "fidelity_lock": {"level": "hard", "status": "unresolved", "evidence": ["DEC-G1-ASSET"]},
+    "rights_lock": {"level": "none", "status": "not_applicable", "evidence": []},
+    "layout_lock": {"level": "medium", "status": "resolved", "evidence": ["DEC-G0-CREATIVE"]},
+    "reuse_audit": {"level": "medium", "status": "resolved", "evidence": ["DEC-G1-ASSET"]}
+  },
+  "gates": {
+    "G0": {
+      "required": true,
+      "status": "pending",
+      "decision_ids": ["DEC-G0-CREATIVE"],
+      "approval_event_id": ""
+    },
+    "G1": {
+      "required": true,
+      "status": "pending",
+      "decision_ids": ["DEC-G1-ASSET"],
+      "approval_event_id": ""
+    },
+    "G2": {
+      "required": true,
+      "status": "pending",
+      "decision_ids": [],
+      "approval_event_id": ""
+    }
+  },
+  "team": {
+    "execution_mode": "physical_subagents",
+    "client_window": "图片总编",
+    "current_lead": "美术指导",
+    "team_intro_shown": false,
+    "last_handoff_announced_version": ""
+  },
+  "frontstage": {
+    "current_stage": "visual_anchor",
+    "completed_this_round": "asset coverage specification ready",
+    "pending_user_decision": "approve asset coverage",
+    "next_action": "build asset detail bundle",
+    "after_confirmation": "run fidelity gate",
+    "remaining_confirmations": 1
+  },
+  "standing_authorization": {
+    "generate_one_candidate": true,
+    "max_candidates": 1,
+    "external_publish": false,
+    "source": "user_request"
+  },
+  "delegation_scope": {
+    "enabled": true,
+    "allowed_fields": ["reversible_visual_details"],
+    "excluded_fields": ["rights_scope", "core_semantics", "character_identity", "additional_cost"],
+    "authorized_by": "user",
+    "source": "user_request"
+  },
+  "decisions": [
+    {
+      "id": "DEC-G0-CREATIVE",
+      "gate": "G0",
+      "field": "creative_contract",
+      "value": "replace-me",
+      "fingerprint": "f5000531bb3e64cb0fe5a01718baf65c318ba376e001bfcc8e56b4be1e7edd8f",
+      "source": "agent_recommendation",
+      "depends_on": [],
+      "dependency_fingerprints": {},
+      "record_fingerprint": "16c6564a0e02030034269389d5620382ad37c77ebb161e4f283f2ce8da6b03cd"
+    },
+    {
+      "id": "DEC-G1-ASSET",
+      "gate": "G1",
+      "field": "asset_board_spec",
+      "value": {
+        "asset_board_spec": "asset_detail_bundle",
+        "coverage": {
+          "characters": [{
+            "id": "character-01",
+            "identity_views": ["front", "three_quarter", "side"],
+            "expression_actions": ["neutral", "common_emotion", "max_allowed_action"]
+          }],
+          "multi_character_scale": false,
+          "style_dimensions": ["line", "shape", "palette"],
+          "props": ["key-prop"],
+          "scenes": ["key-scene"],
+          "forbid_narrative_substitution": true
+        },
+        "dependency_fields": ["creative_contract"],
+        "excluded_g0_fields": []
+      },
+      "fingerprint": "f88f275bd11d9e647eb2d91f048db3e77504790c85cfd5432ca1412c9898cf4e",
+      "source": "agent_recommendation",
+      "depends_on": ["DEC-G0-CREATIVE"],
+      "dependency_fingerprints": {
+        "DEC-G0-CREATIVE": "f5000531bb3e64cb0fe5a01718baf65c318ba376e001bfcc8e56b4be1e7edd8f"
+      },
+      "record_fingerprint": "8d276f9cf3a2f81a2c4993281271f2d92eccb8d103ba89abaee34ac687a1abba"
+    }
+  ],
+  "artifacts": [],
+  "confirmation_history": [],
+  "effective_validity": {
+    "decisions": {
+      "DEC-G0-CREATIVE": {"valid": true, "reason": "current creative proposal"},
+      "DEC-G1-ASSET": {"valid": true, "reason": "current visual-anchor proposal"}
+    },
+    "artifacts": {},
+    "approval_events": {}
+  },
+  "assumptions": [],
+  "tool_calls": [],
+  "handoff_events": [],
+  "blockers": ["asset coverage requires G1 approval"]
+}

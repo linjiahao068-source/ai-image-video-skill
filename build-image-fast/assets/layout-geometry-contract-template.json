@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0",
+  "source_base_sha256": "replace-with-no-text-base-sha256",
+  "canvas": {"width": 0, "height": 0},
+  "regions": [
+    {
+      "element_id": "replace-me",
+      "container_polygon": [[0, 0], [0, 0], [0, 0]],
+      "safe_margin_px": 0,
+      "safe_polygon": [[0, 0], [0, 0], [0, 0]],
+      "exclusion_polygons": [
+        {"kind": "tail_or_arc", "points": [[0, 0], [0, 0], [0, 0]]}
+      ],
+      "text_box": [0, 0, 0, 0],
+      "typography": {
+        "locked_lines": ["replace-me"],
+        "optical_offset_px": [0, 0]
+      },
+      "base_container_observation": "replace-me"
+    }
+  ]
+}

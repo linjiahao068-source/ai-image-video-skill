@@ -1,7 +1,4 @@
 interface:
-  display_name: "快速生成 AI 图片"
-  short_description: "把抽象创意分八阶段确认并生成可验收、可复现的最终图片与交付包"
-  default_prompt: "Use $build-image-fast to turn my idea into a confirmed AI Image Build Pack and a validated final image."
-
-policy:
-  allow_implicit_invocation: true
+  display_name: "AI 图片制作总编"
+  short_description: "自动选流程、锁定显示语义与漫画排字，并完成资产保真和独立 QA 的图片制作总编"
+  default_prompt: "Use $build-image-fast 把我的图片想法交给制作团队；图片总编自动选择最精简且可靠的流程，必要时在 G0 锁定显示语义、在 G1 锁定视觉与排字合同，生成并 QA 后交付最终图片与 Build Pack。"
