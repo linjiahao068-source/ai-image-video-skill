@@ -1,80 +1,155 @@
 # AI Image & Video Skill
 
-一套可直接调用的 AI 影像创作技能包：包含 11 个原子 Skill＋1 个总控工作流 Skill。11 个原子 Skill 来自《影视飓风 AI 实战课》的方法蒸馏；build-image-fast V5 在其上提供 atomic/direct/guided/controlled/edit 五种工作模式、单一团队前台、0/1/2 拍板、G0/G1/G2、standing authorization、字段级有效性、asset release、自动 QA 与可恢复 Build Pack。
+面向 Codex 的图片与视频创作 Skill 集合。它将「一句创意」拆成可执行、可检查、可恢复的制作流程；不把模型一次生成的偶然结果当作项目交付。
 
-## 完整静态图片项目
+当前仓库包含：
 
-使用 [build-image-fast](./build-image-fast/SKILL.md)。
+- 1 个图片制作总控：`build-image-fast`（V5.3）
+- 11 个可独立调用的原子 Skill
+- 图片工作流的合同、模板、验证脚本和测试夹具
 
-### V5 工作模式与 0 / 1 / 2
+> 图片总控负责静态图片、海报、信息图、角色系列图和漫画。完整 5–30 秒视频项目请使用已安装的 `build-ai-video-fast`，而非本仓库的 `build-image-fast`。
 
-| 模式 | 正式成图前阻塞式用户拍板数 | 路径 |
-| --- | ---: | --- |
-| atomic | 不适用 | 单点原子任务；通常不强制完整 Build Pack |
-| direct | 0 | 无门；请求字段有效时立即生成 |
-| guided | 1 | G0 创意决策包 |
-| controlled | 2 | G0 创意决策包 + G1 视觉锚点包 |
-| edit | 通常 0 | 单一变更项与保留项清楚时编辑后自动 G2；否则退出 edit |
+## 最快开始
 
-0/1/2 只聚焦 direct、guided、controlled 的正式成图前阻塞式用户拍板。edit 在合同清楚时通常为 0；atomic 不进入完整项目拍板模型。团队交接、内部阶段、自检、asset release、QA、返修、Build Pack 和路径检查不额外计数。
+把需要的 Skill 文件夹复制到 Codex 的 skills 目录，重启或刷新 Codex 后即可调用。
 
-review_mode 默认 adaptive。只有用户明确要求逐阶段审片时才使用 full_review，把八个内部阶段分别暴露为确认门；full_review 不是第六种 workflow_mode，也不能降低 risk floor、G0/G1 硬门或权利阻断。用户明确切回 adaptive 后，按当前有效字段恢复标准门。
+### 从 0 制作一张图片
 
-- G0：需求、故事/信息、角色、权利、推荐方向与关键假设。
-- G1：仅 controlled 使用；一次性提交候选资产、三件套 candidate_preview、压力测试摘要和审核。G1 不是通用生成授权。
-- G2：正式图、自动 QA、Build Pack、最终路径与哈希的最终交付包；不计入 0/1/2，也不再追加 QA 或路径确认。
+```text
+[$build-image-fast]
 
-用户明确要求“制作、生成、做、落地”时形成范围内 standing authorization。direct 立即生成；guided 在 G0 后生成正式图；controlled 在 G0 后生成候选资产，在 G1 通过并自动完成 asset release 后生成正式图。用途、权利或关键字段越界会让授权或依赖字段失效。
+为新品咖啡制作一张 4:5 小红书封面。
+受众：25–35 岁的上班族。
+目标：公开发布。
+风格：温暖、干净、有手作感。
+标题文字：星期一，也要慢慢醒来。
+```
 
-默认调用：
+总控会判断风险并推荐工作方式；你只需要确认会改变成品的关键决定。
 
-    Use $build-image-fast to turn my idea into a confirmed AI Image Build Pack and a validated final image.
+### 制作需要角色一致性的四格漫画
 
-图片总编是唯一用户前台。内容与角色导演、美术指导、执行场记在后台通过版本化文件交接，不各自向用户增加确认。高风险项目用 provenance 与 effective validity 保留来源、字段依赖、失效范围和恢复点。
+```text
+[$build-image-fast]
 
-Seedance 2.0 只提供可选动画化交接，不在本工作流中生成视频。
+制作一组普及 ETF 知识的趣味四格漫画。
+角色、画风和商业授权资料已提供。
+目标：公开商业发布。
+路线：controlled。
+本轮不要调用图片模型，也不要先画四格。
 
-## atomic 单点任务与 edit
+请先交付 G0：内容包、角色合同、逐格角色矩阵、显示语义合同和文件清单。
+```
 
-直接调用原子 Skill 时使用 atomic，不启动完整项目的 0/1/2 门，也通常不强制生成完整 Build Pack。
+确认 G0 后，总控才会安排美术指导交付 G1 资产与版式方案；确认 G1 后，才进入无字底图、确定性排字、QA 与 G2 交付。
 
-局部图片编辑只有在目标图、单一变更项和保留项都清楚时使用 edit，通常 0 次阻断拍板，编辑后自动 G2。出现第二变更变量或保留边界不清时必须退出 edit，改用 guided 或 controlled。
+### 修复一张已有图片
 
-### 图片提示词与静态画面
+```text
+[$build-image-fast]
 
-- [image-prompt-specification](./image-prompt-specification/SKILL.md)：把模糊画面意图变成按需裁剪的视觉规格。
-- [reference-image-prompt-reverse-engineering](./reference-image-prompt-reverse-engineering/SKILL.md)：从参考图的可见证据反推可验证提示词。
-- [constraint-aware-prompt-expansion](./constraint-aware-prompt-expansion/SKILL.md)：在严格控制和创意探索之间选择扩写方式。
+修复附件中的对话文字越出气泡问题。
+保持：角色、构图、颜色、其余文字和背景都不变。
+只改：第一格对话气泡内的两行文字。
+```
 
-### 输入、编辑与一致性
+当变更项和保留项都明确时，系统使用 `edit` 路线；若同时涉及剧情、角色或多个版式变量，会自动退出局部编辑，改走可控项目流程。
 
-- [generation-mode-reference-selection](./generation-mode-reference-selection/SKILL.md)：按最难控制的变量分配输入模态和素材职责。
-- [capability-cost-fit](./capability-cost-fit/SKILL.md)：按失败风险选择能力、速度和成本档位。
-- [preserve-change-edit-contract](./preserve-change-edit-contract/SKILL.md)：把局部编辑写成变更项与保留项合同。
-- [reference-anchor-density](./reference-anchor-density/SKILL.md)：按保真风险配置多视图、端帧和细节锚点。
+## build-image-fast V5.3
 
-### 视频叙事、生成与装配
+`build-image-fast` 不是“把提示词交给图片模型”的单步工具，而是静态图片项目的总控入口。它将项目拆分为四种专业职责，并只让图片总编面对用户。
 
-- [video-direction-specification](./video-direction-specification/SKILL.md)：把情绪和故事写成可观察的动作、镜头与节奏。
-- [storyboard-event-budgeting](./storyboard-event-budgeting/SKILL.md)：用时长和事件预算决定分镜颗粒度。
-- [endpoint-anchored-video-synthesis](./endpoint-anchored-video-synthesis/SKILL.md)：用首尾帧或关键帧锁定必须命中的状态。
-- [sequence-continuity-assembly](./sequence-continuity-assembly/SKILL.md)：修复多片段之间的动作、空间、接缝和节奏。
+| 角色 | 负责什么 | 不负责什么 |
+| --- | --- | --- |
+| 图片总编 | 选路、门控、交接、独立 QA、最终交付 | 替专业角色擅自改写语义或美术规范 |
+| 内容与角色导演 | 故事/信息结构、角色合同、逐格矩阵、可见文字语义 | 决定字体、字号、气泡几何 |
+| 美术指导 | 视觉风格、资产板、无字底图后的真实容器轮廓与排字几何 | 改写已锁定对白、标签含义、角色职能 |
+| 执行场记 | 无字底图提示词、确定性排字、构建和适配报告 | 为塞进容器而缩字、删字、改标签或添加合同外 UI |
 
-完整索引与组合关系见 [INDEX.md](./INDEX.md)。
+### 五种工作模式
 
-## 安装
+| 模式 | 适用场景 | 成图前用户拍板 |
+| --- | --- | ---: |
+| `atomic` | 只需提示词、参考图分析、模型比较等单点问题 | 不适用 |
+| `direct` | 低风险单图，需求完整 | 0 次 |
+| `guided` | 有核心创意、文案或发布取舍 | G0 |
+| `controlled` | 多角色、商业发布、强风格/文字/连续性要求 | G0 + G1 |
+| `edit` | 一张已有图上的单一明确修改 | 通常 0 次 |
 
-复制需要的完整 Skill 目录到 Codex skills 目录。使用 build-image-fast 时，同时安装它调用的图片原子 Skill。仓库不要求安装全部 11 个原子 Skill 才能使用某一个单点 Skill。
+`review_mode=adaptive` 是默认值：后台有八个生产阶段，但不会把它们伪装成八次用户确认。只有你明确要求逐阶段审片时，才使用 `full_review`。
 
-## 测试与验证
+### G0 / G1 / G2 的含义
 
-- 11 个原子 Skill 的 66 条原有独立用例保持单独统计。
-- build-image-fast/test-prompts.json 是 V5 合同 fixture，不是已执行的 LLM 测试结果。
-- build-image-fast/scripts/validate_contract_cases.py 只验证 fixture schema、V4 39 条迁移完整性、V5 覆盖、受控事件枚举与跨字段一致性，不调用 LLM 或图片模型。
-- 实际运行结果、未执行边界和历史验证分别记录在 [verified.md](./verified.md) 与 [build-image-fast/test-results.md](./build-image-fast/test-results.md)。
+| 门 | 你看到的交付 | 你需要确认什么 |
+| --- | --- | --- |
+| G0 创意锁定 | 内容包、角色合同、逐格矩阵、权利边界、显示语义合同 | 会改变故事、角色、精确文案、标签含义或发布边界的决定 |
+| G1 视觉锚点锁定 | 资产详情方案、视觉规范、无字底图方案、排字/几何合同、压力测试摘要 | 会改变视觉锚点、资产、构图或排字方案的决定 |
+| G2 最终交付 | 正式图、QA 结果、已知限制、AI Image Build Pack | 无需额外“确认 QA”；通过后自动交付 |
 
-## 来源、边界与许可
+项目每轮都会明确说明：`当前阶段 / 已完成 / 待确认事项 / 下一步 / 确认后的流程`。如果缺少授权、关键输入或可靠工具，项目会标为“受阻”，而不是用猜测补齐。
 
-仓库只发布课程方法蒸馏出的工作流、示例、测试和说明，不包含原始课程视频、音频、转写稿、课件或截图。真实人物、商标、受保护角色和商业交付仍需确认授权、隐私、品牌规范与人工审核。
+## V5.3 漫画展示排字
 
-原创蒸馏文本与代码采用 [MIT License](./LICENSE)；该许可不覆盖原课程及其素材。
+当项目在 G0 明确选择 `typography_profile=comic_display`，或用户提供了需要提炼规则的漫画排字参考时，V5.3 启用严格的“语义 + 几何 + 排字”三层合同。
+
+它解决的不是“让模型尽量把字写对”，而是把以下问题变成正式验收项：
+
+- 每一个对话、篮子牌、物品标签、页脚的逐字文本与语义角色；
+- 每格是否必须重复主标牌（例如 `ETF`）；标签是否允许为空（默认不允许）；
+- 已授权字体文件、哈希、字重、层级、最小字号、行距、描边和对齐；
+- 无字底图中气泡尾巴、弧边、标牌和安全边距的真实轮廓；
+- 实际断行、光学定位、文字蒙版、裁切证据和构建报告。
+
+以下任一项会阻断 G2：文字越出实际安全轮廓、必需标签为空、字体权利或哈希不符、字号/视觉占位不足、未按合同居中、断行不符，或出现合同外空白 UI。
+
+这套规则只提炼参考图中可观察的视觉规律；不会复制未确认授权的字体、版式或故事。
+
+## 资产与角色一致性
+
+多角色、系列图、受保护角色或指定风格的项目，`controlled` 路线会要求可审阅的资产三件套：
+
+1. 带字资产总览：供用户和 QA 阅读；
+2. 无字 clean group：供生成阶段参考；
+3. 机器可读资产清单：记录角色、道具、场景、权利和版本。
+
+漫画成图不能替代角色资产板。角色卡应覆盖主/配角色的主要视图、常用表情和动作边界，以及关键道具与场景锚点。系统不会承诺模型必然复刻某一“官方画风”；涉及真实人物、商标、受保护角色或商业发布时，仍须由项目方确认授权、隐私和品牌规范。
+
+## 原子 Skill 索引
+
+| 类别 | Skill |
+| --- | --- |
+| 图片规格与提示词 | [image-prompt-specification](./image-prompt-specification/SKILL.md)、[reference-image-prompt-reverse-engineering](./reference-image-prompt-reverse-engineering/SKILL.md)、[constraint-aware-prompt-expansion](./constraint-aware-prompt-expansion/SKILL.md) |
+| 输入、编辑与一致性 | [generation-mode-reference-selection](./generation-mode-reference-selection/SKILL.md)、[capability-cost-fit](./capability-cost-fit/SKILL.md)、[preserve-change-edit-contract](./preserve-change-edit-contract/SKILL.md)、[reference-anchor-density](./reference-anchor-density/SKILL.md) |
+| 视频叙事与装配 | [video-direction-specification](./video-direction-specification/SKILL.md)、[storyboard-event-budgeting](./storyboard-event-budgeting/SKILL.md)、[endpoint-anchored-video-synthesis](./endpoint-anchored-video-synthesis/SKILL.md)、[sequence-continuity-assembly](./sequence-continuity-assembly/SKILL.md) |
+
+完整关系与路由见 [INDEX.md](./INDEX.md)。
+
+## 本地验证
+
+仓库的合同测试不会调用图片模型。以 Windows PowerShell 为例：
+
+```powershell
+cd "C:\Users\老大哥柚子\Documents\AI视频SKILL 2\ai-图片&视频-skill"
+
+$py = "$env:USERPROFILE\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe"
+& $py build-image-fast\scripts\test_v53_comic_typography.py
+& $py build-image-fast\scripts\test_v53_typography_state.py
+& $py build-image-fast\scripts\test_v52_display_state.py
+& $py build-image-fast\scripts\test_v51_asset_coverage.py
+```
+
+更多验证入口：
+
+- [verified.md](./verified.md)：仓库级已验证范围与未验证边界；
+- [build-image-fast/test-prompts.json](./build-image-fast/test-prompts.json)：合同测试夹具；
+- [build-image-fast/test-results.md](./build-image-fast/test-results.md)：测试记录与限制；
+- [build-image-fast/references](./build-image-fast/references)：工作流、资产、显示合同与 QA 规范。
+
+通过合同测试不等于已经验证真实出图质量、中文逐字成图、角色相似度或一次生成成功率。真实生成与视觉验收必须在获得相应授权后单独执行并记录。
+
+## 发布与许可边界
+
+本仓库发布的是工作流、示例、测试与说明，不包含原始课程视频、音频、转录、课件或截图。真实人物、商标、受保护角色、参考图和商业交付的权利与审核责任仍由项目方承担。
+
+原创蒸馏文本和代码采用 [MIT License](./LICENSE)；该许可不覆盖任何第三方素材或课程原始内容。
