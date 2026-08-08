@@ -1,70 +1,84 @@
 # AI Image & Video Skill Index
 
-> 本仓库由 [cangjie-skill](https://github.com/kangarooking/cangjie-skill) 蒸馏，汇集 11 个可组合的 AI 影像创作 skill。构建日期：2026-07-27。
+本仓库包含 11 个原子 Skill＋1 个总控工作流 Skill。
 
-## 一句话主旨
+## 总控入口
 
-AI 影像生成不是“写一条更长 prompt”的竞赛；先用正确的输入承载难控制变量，再用锚点、分镜、端点和剪辑约束把结果变成可交付的序列。
+- [build-image-fast](./build-image-fast/SKILL.md)：从抽象 Idea 到正式静态图与可恢复 AI Image Build Pack。V5 使用单一团队前台、atomic/direct/guided/controlled/edit 五种模式、G0/G1/G2、standing authorization、字段 provenance/effective validity、自动 asset release 与自动 QA。
 
-## Skill 列表
+### V5 门模型
+
+| 模式 | 正式成图前拍板数 | 执行路径 |
+| --- | ---: | --- |
+| atomic | 不适用 | 单点原子任务；通常不强制完整 Build Pack |
+| direct | 0 | 有效请求 → 正式图 → G2 |
+| guided | 1 | G0 → 正式图 → G2 |
+| controlled | 2 | G0 → 候选资产/G1 → 自动 asset release → 正式图 → G2 |
+| edit | 通常 0 | 单一变更且保留项清楚 → 编辑 → G2；否则退出 edit |
+
+- G0：创意决策包；不是团队入口。
+- G1：仅 controlled 的视觉锚点包；不是通用生成授权。
+- G2：正式图＋自动 QA＋Build Pack 的最终交付包；不计入 0/1/2，不追加 QA 或路径确认。
+- “制作/生成/做/落地”形成范围内 standing authorization；后台角色和工具调用不增加用户拍板。
+- risk_floor 记录最低风险级别；升级只补缺失标准门，不改写 G0/G1/G2 的语义。
+- 字段变化只让自身及依赖下游失效；恢复从最早无效门续接。
+- atomic 不强制完整 Pack；edit 只允许单一清晰变更，第二变量或保留不清时退出到 guided/controlled。
+- review_mode 默认 adaptive；只有用户明确要求逐阶段审片时才用 full_review。full_review 暴露八阶段确认，但不是 workflow_mode，也不能降低风险底线或硬门。
+
+## 原子 Skill
 
 ### 图片提示词与静态控制
 
-- [`image-prompt-specification`](./image-prompt-specification/SKILL.md) — 用四维意图查漏、并按任务裁剪字段。
-- [`reference-image-prompt-reverse-engineering`](./reference-image-prompt-reverse-engineering/SKILL.md) — 从可见证据反推提示词并保留不确定性。
-- [`constraint-aware-prompt-expansion`](./constraint-aware-prompt-expansion/SKILL.md) — 在控制与探索之间选择 AI 扩写模式。
+- [image-prompt-specification](./image-prompt-specification/SKILL.md)
+- [reference-image-prompt-reverse-engineering](./reference-image-prompt-reverse-engineering/SKILL.md)
+- [constraint-aware-prompt-expansion](./constraint-aware-prompt-expansion/SKILL.md)
 
 ### 输入、编辑与一致性
 
-- [`generation-mode-reference-selection`](./generation-mode-reference-selection/SKILL.md) — 为外观、动作、镜头、节拍分配正确的输入模态。
-- [`capability-cost-fit`](./capability-cost-fit/SKILL.md) — 按风险而非“最高规格”选择模型能力档位。
-- [`preserve-change-edit-contract`](./preserve-change-edit-contract/SKILL.md) — 明确局部编辑的改变项与保留项。
-- [`reference-anchor-density`](./reference-anchor-density/SKILL.md) — 为身份、产品和跨镜头一致性配置足够锚点。
+- [generation-mode-reference-selection](./generation-mode-reference-selection/SKILL.md)
+- [capability-cost-fit](./capability-cost-fit/SKILL.md)
+- [preserve-change-edit-contract](./preserve-change-edit-contract/SKILL.md)
+- [reference-anchor-density](./reference-anchor-density/SKILL.md)
 
 ### 视频叙事、生成与装配
 
-- [`video-direction-specification`](./video-direction-specification/SKILL.md) — 将情绪、故事和镜头感写成可观察的动态规格。
-- [`storyboard-event-budgeting`](./storyboard-event-budgeting/SKILL.md) — 用时长和事件预算决定分镜与生成颗粒度。
-- [`endpoint-anchored-video-synthesis`](./endpoint-anchored-video-synthesis/SKILL.md) — 用首尾帧或关键帧锁定必须命中的状态。
-- [`sequence-continuity-assembly`](./sequence-continuity-assembly/SKILL.md) — 用转场、动作连接和节拍修复生成片段之间的断裂。
+- [video-direction-specification](./video-direction-specification/SKILL.md)
+- [storyboard-event-budgeting](./storyboard-event-budgeting/SKILL.md)
+- [endpoint-anchored-video-synthesis](./endpoint-anchored-video-synthesis/SKILL.md)
+- [sequence-continuity-assembly](./sequence-continuity-assembly/SKILL.md)
 
-## 关系图
+## 组合关系
 
-```mermaid
-graph LR
-  A[image-prompt-specification] -->|composes-with| B[reference-image-prompt-reverse-engineering]
-  A -->|composes-with| C[constraint-aware-prompt-expansion]
-  C -->|depends-on| A
+    build-image-fast
+      ├─ generation-mode-reference-selection
+      ├─ constraint-aware-prompt-expansion
+      ├─ image-prompt-specification
+      ├─ reference-image-prompt-reverse-engineering
+      ├─ reference-anchor-density
+      ├─ capability-cost-fit
+      └─ preserve-change-edit-contract
 
-  D[generation-mode-reference-selection] -->|composes-with| E[capability-cost-fit]
-  D -->|composes-with| F[preserve-change-edit-contract]
-  D -->|composes-with| G[reference-anchor-density]
-  F -->|composes-with| G
-  G -->|composes-with| J[endpoint-anchored-video-synthesis]
+    video-direction-specification
+      → storyboard-event-budgeting
+      → endpoint-anchored-video-synthesis
+      → sequence-continuity-assembly
 
-  H[video-direction-specification] -->|composes-with| I[storyboard-event-budgeting]
-  H -->|composes-with| J
-  I -->|composes-with| J
-  I -->|depends-on| K[sequence-continuity-assembly]
-  J -->|composes-with| K
-```
+## 路由原则
 
-图例：`-->` 为依赖或建议先后；`composes-with` 表示适合在同一工作流组合使用。
+- 完整 0→1 静态图片项目：build-image-fast，按 direct/guided/controlled 选择 0/1/2
+- 单点原子任务：atomic，直接路由对应原子 Skill，通常不强制完整 Build Pack
+- 单一变更且保留项清楚的图片编辑：edit，并调用 preserve-change-edit-contract
+- 第二变更变量或保留项不清的编辑：退出 edit，转 guided/controlled
+- 用户明确要求逐阶段审片：review_mode=full_review；否则保持 adaptive
+- 只写或优化图片提示词：image-prompt-specification
+- 只反推参考图：reference-image-prompt-reverse-engineering
+- 只比较模型成本/能力：capability-cost-fit
+- 完整 5–30 秒视频项目：build-ai-video-fast（如已安装）
 
-## 推荐学习顺序
+## 验证入口
 
-1. `image-prompt-specification`：先学会表达静态画面意图。
-2. `generation-mode-reference-selection`：学会为不同变量选择正确素材和输入模式。
-3. `capability-cost-fit`：以风险与预算约束工作流。
-4. `preserve-change-edit-contract` 与 `reference-anchor-density`：让编辑与一致性可验收。
-5. `video-direction-specification`：将故事意图转成动态导演规格。
-6. `storyboard-event-budgeting`：将想法拆成合适数量和时长的镜头。
-7. `endpoint-anchored-video-synthesis`：在需要确定收尾、变形完成态或循环时锁定端点。
-8. `sequence-continuity-assembly`：最后解决片段之间的连续性与节奏。
-
-## 审计轨迹
-
-- [COURSE_OVERVIEW.md](./COURSE_OVERVIEW.md)：课程级方法论与适用边界。
-- [verified.md](./verified.md)：三重验证记录。
-- 各 skill 目录中的 `test-prompts.json`：触发、反例与边界测试。
-- 各 skill 目录中的 `test-results.md`：独立盲测的判定记录。
+- [verified.md](./verified.md)：仓库级验证范围与未验证边界
+- [build-image-fast/test-prompts.json](./build-image-fast/test-prompts.json)：V5 合同 fixture
+- [build-image-fast/scripts/validate_contract_cases.py](./build-image-fast/scripts/validate_contract_cases.py)：fixture schema/一致性验证器
+- [build-image-fast/test-results.md](./build-image-fast/test-results.md)：历史验证与 V5 实际运行记录
+- 各原子 Skill 的 test-prompts.json 与 test-results.md：原有 66 条测试
