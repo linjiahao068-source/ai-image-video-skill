@@ -472,6 +472,109 @@ def materialize_state(project_root: Path, state: dict) -> Path:
     return state_path
 
 
+def v52_text_state() -> dict:
+    state = controlled_state()
+    state["schema_version"] = "5.2"
+    state["frontstage"] = {
+        "current_stage": "visual_anchor",
+        "completed_this_round": "display contract locked",
+        "pending_user_decision": "none",
+        "next_action": "continue production",
+        "after_confirmation": "not_applicable",
+        "remaining_confirmations": 0,
+    }
+    decisions = {item["id"]: item for item in state["decisions"]}
+    display = decision(
+        "DEC-DISPLAY",
+        "G0",
+        "display_semantics",
+        {
+            "profile": "actual_shape",
+            "elements": [{
+                "id": "p2-basket-plaque",
+                "panel_id": "p2",
+                "target_object": "etf-basket",
+                "container_presence": "required",
+                "text_mode": "exact",
+                "text_key": "basket_etf",
+                "max_lines": 1,
+                "repeat_group": "etf-basket-plaque",
+                "repeat_rule": "same_text",
+            }],
+        },
+    )
+    exact = decisions["DEC-TEXT"]
+    exact["value"] = {"strings": {"basket_etf": "ETF"}}
+    exact["fingerprint"] = canonical_fingerprint(exact["value"])
+    refresh_decision_record(exact)
+    g1 = decisions["DEC-G1"]
+    g1["value"]["dependency_fields"] = [
+        "creative_contract", "rights_scope", "display_semantics",
+    ]
+    g1["value"]["coverage"] = {
+        "characters": [{
+            "id": "hero",
+            "identity_views": ["front", "three_quarter", "side"],
+            "expression_actions": ["neutral", "common_emotion", "max_allowed_action"],
+        }],
+        "multi_character_scale": False,
+        "style_dimensions": ["line", "shape", "palette"],
+        "props": ["basket"],
+        "scenes": ["market"],
+        "forbid_narrative_substitution": True,
+    }
+    g1["fingerprint"] = canonical_fingerprint(g1["value"])
+    bind_decision_dependencies(g1, [decisions["DEC-G0"], decisions["DEC-RIGHTS"], display])
+    state["decisions"].append(display)
+    mark_valid(state, "decisions", display["id"])
+    state["gates"]["G0"]["decision_ids"].append(display["id"])
+    g0_event = state["confirmation_history"][0]
+    g0_event["decision_ids"].append(display["id"])
+    sync_g1_change(state)
+    refresh_fingerprint_bindings(state)
+    return state
+
+
+def v53_comic_state() -> dict:
+    state = v52_text_state()
+    state["schema_version"] = "5.3"
+    decisions = {item["id"]: item for item in state["decisions"]}
+    display = decisions["DEC-DISPLAY"]
+    display["value"]["elements"][0]["semantic_role"] = "primary_anchor"
+    display["value"]["elements"][0]["reading_priority"] = 1
+    display["fingerprint"] = canonical_fingerprint(display["value"])
+    refresh_decision_record(display)
+    profile = decision("DEC-TYPOGRAPHY", "G0", "typography_profile", "comic_display")
+    state["decisions"].append(profile)
+    mark_valid(state, "decisions", profile["id"])
+    state["gates"]["G0"]["decision_ids"].append(profile["id"])
+    g0_event = state["confirmation_history"][0]
+    g0_event["decision_ids"].append(profile["id"])
+    g0_event["decision_fingerprints"].append(profile["fingerprint"])
+    g0_event["decision_record_fingerprints"].append(profile["record_fingerprint"])
+    g1 = decisions["DEC-G1"]
+    g1["value"]["dependency_fields"].append("typography_profile")
+    g1["fingerprint"] = canonical_fingerprint(g1["value"])
+    bind_decision_dependencies(
+        g1, [decisions["DEC-G0"], decisions["DEC-RIGHTS"], display, profile]
+    )
+    sync_g1_change(state)
+    refresh_fingerprint_bindings(state)
+    return state
+
+
+def refresh_v53_dependency_chain(state: dict) -> None:
+    decisions = {item["id"]: item for item in state["decisions"]}
+    g1 = decisions["DEC-G1"]
+    g1["fingerprint"] = canonical_fingerprint(g1["value"])
+    bind_decision_dependencies(
+        g1,
+        [decisions["DEC-G0"], decisions["DEC-RIGHTS"], decisions["DEC-DISPLAY"], decisions["DEC-TYPOGRAPHY"]],
+    )
+    sync_g1_change(state)
+    refresh_fingerprint_bindings(state)
+
+
 
 class ProjectStateTests(unittest.TestCase):
     def assert_invalid(self, state: dict, text: str) -> None:
@@ -997,6 +1100,53 @@ class ProjectStateTests(unittest.TestCase):
 
 
     # V5.4 tests remain in ProjectStateTests; module entry point follows the class.
+
+    def test_v52_display_and_exact_text_contract_is_valid_before_formal_generation(self) -> None:
+        report = validate_state(v52_text_state())
+        self.assertFalse(report["migration_required"])
+        self.assertTrue(report["text_contract"]["active"])
+        self.assertEqual(report["text_contract"]["profile"], "actual_shape")
+
+    def test_v52_exact_text_cannot_bypass_display_semantics(self) -> None:
+        state = v52_text_state()
+        decisions = {item["id"]: item for item in state["decisions"]}
+        display = decisions["DEC-DISPLAY"]
+        display["field"] = "layout_constraints"
+        refresh_decision_record(display)
+        g1 = decisions["DEC-G1"]
+        g1["value"]["dependency_fields"][-1] = "layout_constraints"
+        g1["fingerprint"] = canonical_fingerprint(g1["value"])
+        bind_decision_dependencies(g1, [decisions["DEC-G0"], decisions["DEC-RIGHTS"], display])
+        sync_g1_change(state)
+        refresh_fingerprint_bindings(state)
+        with self.assertRaisesRegex(StateError, "display_semantics"):
+            validate_state(state)
+
+    def test_v53_comic_profile_requires_semantic_display_roles(self) -> None:
+        report = validate_state(v53_comic_state())
+        self.assertEqual(report["schema_version"], "5.3")
+        self.assertEqual(report["text_contract"]["typography_profile"], "comic_display")
+
+    def test_v53_rejects_missing_semantic_role(self) -> None:
+        state = v53_comic_state()
+        decision_by_id = {item["id"]: item for item in state["decisions"]}
+        display = decision_by_id["DEC-DISPLAY"]
+        display["value"]["elements"][0].pop("semantic_role")
+        display["fingerprint"] = canonical_fingerprint(display["value"])
+        refresh_decision_record(display)
+        refresh_v53_dependency_chain(state)
+        with self.assertRaisesRegex(StateError, "semantic_role"):
+            validate_state(state)
+
+    def test_v53_rejects_invalid_typography_profile(self) -> None:
+        state = v53_comic_state()
+        profile = next(item for item in state["decisions"] if item["id"] == "DEC-TYPOGRAPHY")
+        profile["value"] = "unknown_profile"
+        profile["fingerprint"] = canonical_fingerprint(profile["value"])
+        refresh_decision_record(profile)
+        refresh_v53_dependency_chain(state)
+        with self.assertRaisesRegex(StateError, "typography_profile"):
+            validate_state(state)
     # Keep this comment indented so the following test method remains part of the class.
     def test_v54_requires_generation_request_and_final_acceptance_archive(self) -> None:
         state = v54_direct_delivery_state()
