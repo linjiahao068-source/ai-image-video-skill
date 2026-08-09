@@ -23,11 +23,14 @@ except ImportError:  # pragma: no cover - exercised by a targeted fail-closed te
     UnidentifiedImageError = OSError
 
 
-SCHEMA_VERSION = "5.3"
+SCHEMA_VERSION = "5.4"
+V53_SCHEMA_VERSION = "5.3"
 V52_SCHEMA_VERSION = "5.2"
 V51_SCHEMA_VERSION = "5.1"
 LEGACY_SCHEMA_VERSION = "5.0"
-SUPPORTED_SCHEMA_VERSIONS = {LEGACY_SCHEMA_VERSION, V51_SCHEMA_VERSION, V52_SCHEMA_VERSION, SCHEMA_VERSION}
+SUPPORTED_SCHEMA_VERSIONS = {
+    LEGACY_SCHEMA_VERSION, V51_SCHEMA_VERSION, V52_SCHEMA_VERSION, V53_SCHEMA_VERSION, SCHEMA_VERSION,
+}
 WORKFLOWS = {"atomic", "direct", "guided", "controlled", "edit"}
 GENERATION_ROUTES = {"fast", "stable", "edit"}
 REVIEW_MODES = {"adaptive", "full_review"}
@@ -36,9 +39,9 @@ RISK_NAMES = {
 }
 RISK_LEVELS = {"none", "low", "medium", "hard"}
 RISK_STATUSES = {"resolved", "unresolved", "not_applicable"}
-PROJECT_STATUSES = {"active", "blocked", "completed"}
+PROJECT_STATUSES = {"active", "blocked", "delivered_pending_acceptance", "completed"}
 GATE_STATUSES = {"not_required", "pending", "approved", "delivered"}
-EVENT_TYPES = {"user_confirmed", "delegated_decision", "system_validation"}
+EVENT_TYPES = {"user_confirmed", "user_feedback", "delegated_decision", "system_validation"}
 DECISION_SOURCES = {
     "user_input", "user_confirmed", "delegated_decision", "agent_recommendation",
     "agent_decision", "assumption", "system",
@@ -55,16 +58,18 @@ ROLE_DELIVERABLE_TYPES = {
     "style_contract", "asset_plan", "reference_map", "asset_board_spec",
     "prompt_route", "prompt_pack", "generation_log", "display_contract",
     "layout_capacity_spec", "layout_geometry_contract", "typography_contract", "lettering_build_report",
+    "generation_request",
 }
 ASSET_TYPES = {
     "character_identity", "expression_action", "character_scale", "style_anchor",
-    "prop_detail", "scene_reference", "fidelity_test",
+    "prop_detail", "scene_reference", "character_profile", "relationship_map", "world_setting",
+    "fidelity_test",
 }
 REQUIRED_EXPRESSION_ACTIONS = {"neutral", "common_emotion", "max_allowed_action"}
 REQUIRED_CHARACTER_VIEWS = {"front", "three_quarter"}
 FORMAL_ARTIFACT_KINDS = {"formal_image", "production_image"}
 FILE_VERIFIED_KINDS = GENERATED_ARTIFACT_KINDS | {
-    "qa_report", "lettering_fit_report", "build_pack", ROLE_DELIVERABLE_KIND,
+    "qa_report", "lettering_fit_report", "build_pack", "handoff_archive", ROLE_DELIVERABLE_KIND,
 }
 RIGHTS_FORBIDDEN_SOURCES = {
     "delegated_decision", "agent_recommendation", "agent_decision", "assumption", "system"
@@ -89,6 +94,9 @@ DISPLAY_TEXT_MODES = {"exact", "none"}
 DISPLAY_REPEAT_RULES = {"same_text", "same_presence", "independent"}
 DISPLAY_SEMANTIC_ROLES = {"dialogue", "primary_anchor", "object_label", "footer"}
 TYPOGRAPHY_PROFILES = {"standard", "comic_display"}
+PRODUCTION_PROFILES = {"fast", "balanced", "quality"}
+PROFILE_SELECTION_SOURCES = {"agent_recommendation", "user_selection", "user_confirmed"}
+CLIENT_ACCEPTANCE_STATUSES = {"not_requested", "pending", "accepted", "revision_requested"}
 HEX_64 = re.compile(r"^[0-9a-f]{64}$")
 
 
@@ -327,6 +335,29 @@ def validate_frontstage(value: Any) -> dict[str, Any]:
     return item
 
 
+# V5.4 production profile validation
+def validate_production_profile(value: Any, route: str) -> dict[str, Any]:
+    item = object_value(value, "production_profile")
+    profile = string_value(require(item, "profile", "production_profile"), "production_profile.profile")
+    selected_by = string_value(require(item, "selected_by", "production_profile"), "production_profile.selected_by")
+    string_value(require(item, "recommended_agent_model", "production_profile"), "production_profile.recommended_agent_model")
+    effort = string_value(require(item, "recommended_reasoning_effort", "production_profile"), "production_profile.recommended_reasoning_effort")
+    recommended_route = string_value(require(item, "recommended_generation_route", "production_profile"), "production_profile.recommended_generation_route")
+    active_model = string_value(require(item, "active_agent_model", "production_profile"), "production_profile.active_agent_model", empty=True)
+    active_effort = string_value(require(item, "active_reasoning_effort", "production_profile"), "production_profile.active_reasoning_effort", empty=True)
+    verified = bool_value(require(item, "active_runtime_verified", "production_profile"), "production_profile.active_runtime_verified")
+    if profile not in PRODUCTION_PROFILES or selected_by not in PROFILE_SELECTION_SOURCES:
+        raise StateError("production_profile has invalid profile or selected_by")
+    if effort not in {"low", "medium", "high"}:
+        raise StateError("production_profile.recommended_reasoning_effort is invalid")
+    if recommended_route not in GENERATION_ROUTES or recommended_route != route:
+        raise StateError("production_profile.recommended_generation_route must match generation_route")
+    if verified and (not active_model or not active_effort):
+        raise StateError("verified production_profile requires active model and reasoning effort")
+    if not verified and (active_model or active_effort):
+        raise StateError("unverified production_profile must not claim active model or reasoning effort")
+    return item
+
 def validity_map(
     effective: dict[str, Any], key: str, expected_ids: set[str]
 ) -> dict[str, dict[str, Any]]:
@@ -402,9 +433,10 @@ def validate_state(
     schema_version = string_value(require(state, "schema_version", "project state"), "schema_version")
     if schema_version not in SUPPORTED_SCHEMA_VERSIONS:
         raise StateError(f"project state schema_version must be one of {sorted(SUPPORTED_SCHEMA_VERSIONS)}")
-    is_v51 = schema_version in {V51_SCHEMA_VERSION, V52_SCHEMA_VERSION, SCHEMA_VERSION}
-    is_v52 = schema_version in {V52_SCHEMA_VERSION, SCHEMA_VERSION}
-    is_v53 = schema_version == SCHEMA_VERSION
+    is_v51 = schema_version in {V51_SCHEMA_VERSION, V52_SCHEMA_VERSION, V53_SCHEMA_VERSION, SCHEMA_VERSION}
+    is_v52 = schema_version in {V52_SCHEMA_VERSION, V53_SCHEMA_VERSION, SCHEMA_VERSION}
+    is_v53 = schema_version in {V53_SCHEMA_VERSION, SCHEMA_VERSION}
+    is_v54 = schema_version == SCHEMA_VERSION
     project_id = string_value(require(state, "project_id", "project state"), "project_id")
     revision = int_value(require(state, "state_revision", "project state"), "state_revision", minimum=1)
     internal_stage = int_value(
@@ -428,7 +460,9 @@ def validate_state(
     if review not in REVIEW_MODES:
         raise StateError(f"review_mode must be one of {sorted(REVIEW_MODES)}")
 
+    production_profile = validate_production_profile(require(state, "production_profile", "project state"), route) if is_v54 else None
     for key in ("assumptions", "tool_calls", "handoff_events"):
+        # production_profile is validated before this required-list loop.
         values = list_value(require(state, key, "project state"), key)
         if not all(isinstance(item, dict) for item in values):
             raise StateError(f"{key} entries must be objects")
@@ -506,7 +540,12 @@ def validate_state(
             "required": required_flag, "status": gate_status,
             "decision_ids": decision_ids, "approval_event_id": approval,
         }
-    if (status == "completed") != (gates["G2"]["status"] == "delivered"):
+    if is_v54:
+        if gates["G2"]["status"] == "delivered" and status not in {"delivered_pending_acceptance", "completed"}:
+            raise StateError("V5.4 delivered G2 requires delivered_pending_acceptance or completed status")
+        if status in {"delivered_pending_acceptance", "completed"} and gates["G2"]["status"] != "delivered":
+            raise StateError("V5.4 final delivery status requires a delivered G2")
+    elif (status == "completed") != (gates["G2"]["status"] == "delivered"):
         raise StateError("project status completed if and only if G2 is delivered")
 
     team = object_value(require(state, "team", "project state"), "team")
@@ -763,6 +802,8 @@ def validate_state(
             raise StateError(f"{context} user_confirmed actor must be user")
         if event_type == "delegated_decision" and actor != "user":
             raise StateError(f"{context} delegated_decision actor must be user")
+        if event_type == "user_feedback" and actor != "user":
+            raise StateError(f"{context} user_feedback actor must be user")
         if event_type == "system_validation" and actor not in {"qa_system", "system"}:
             raise StateError(f"{context} system_validation actor must be qa_system or system")
         if not decision_ids and not artifact_ids:
@@ -898,6 +939,43 @@ def validate_state(
     valid_artifacts = {
         record_id: item for record_id, item in artifacts.items() if artifact_validity[record_id]["valid"]
     }
+    # V5.4 client acceptance is checked before generated-artifact constraints.
+    if is_v54:
+        acceptance = object_value(require(state, "client_acceptance", "project state"), "client_acceptance")
+        acceptance_status = string_value(require(acceptance, "status", "client_acceptance"), "client_acceptance.status")
+        acceptance_event_id = string_value(require(acceptance, "event_id", "client_acceptance"), "client_acceptance.event_id", empty=True)
+        archive_id = string_value(require(acceptance, "handoff_archive_artifact_id", "client_acceptance"), "client_acceptance.handoff_archive_artifact_id", empty=True)
+        if acceptance_status not in CLIENT_ACCEPTANCE_STATUSES:
+            raise StateError("client_acceptance.status is invalid")
+        if status == "delivered_pending_acceptance" and acceptance_status not in {"pending", "accepted"}:
+            raise StateError("delivered_pending_acceptance requires pending or accepted client acceptance")
+        if status == "completed" and acceptance_status != "accepted":
+            raise StateError("completed V5.4 project requires accepted client acceptance")
+        if acceptance_status in {"not_requested", "pending"}:
+            if acceptance_event_id or archive_id:
+                raise StateError("pending client acceptance cannot reference an event or archive")
+        else:
+            if acceptance_event_id not in events or not approval_validity[acceptance_event_id]["valid"]:
+                raise StateError("client acceptance references an invalid event")
+            event = events[acceptance_event_id]
+            expected_event_type = "user_confirmed" if acceptance_status == "accepted" else "user_feedback"
+            if event["type"] != expected_event_type or event["actor"] != "user" or event["gate"] != "G2":
+                raise StateError("client acceptance must be a user G2 event with the matching outcome type")
+            accepted_kinds = {artifacts[artifact_id]["kind"] for artifact_id in event["artifact_ids"]}
+            if not accepted_kinds.intersection(FORMAL_ARTIFACT_KINDS) or "build_pack" not in accepted_kinds:
+                raise StateError("client acceptance must reference a final image and Build Pack")
+        if status == "completed":
+            archive = artifacts.get(archive_id)
+            if not archive or not artifact_validity[archive_id]["valid"]:
+                raise StateError("completed V5.4 project requires a valid handoff archive")
+            if archive["kind"] != "handoff_archive" or archive["lifecycle"] != "delivered":
+                raise StateError("completed V5.4 project requires a delivered handoff_archive")
+            if not set(event["artifact_ids"]) <= set(archive["depends_on"]):
+                raise StateError("handoff_archive must snapshot every accepted final artifact")
+        client_acceptance = acceptance
+    else:
+        client_acceptance = None
+
     current_generated = {
         record_id: item for record_id, item in valid_artifacts.items()
         if item["kind"] in GENERATED_ARTIFACT_KINDS
@@ -1173,6 +1251,14 @@ def validate_state(
         and artifact["lifecycle"] not in {"planned", "invalidated"}
     }
 
+    # V5.4 request records are resolved before formal-artifact constraints.
+    generation_requests = {
+        artifact_id for artifact_id, artifact in valid_artifacts.items()
+        if artifact["kind"] == ROLE_DELIVERABLE_KIND
+        and artifact.get("deliverable_type") == "generation_request"
+        and artifact.get("role") == "execution_scribe"
+        and artifact["lifecycle"] not in {"planned", "invalidated"}
+    } if is_v54 else set()
     formal_artifacts = {
         record_id: item for record_id, item in valid_artifacts.items()
         if item["kind"] in FORMAL_ARTIFACT_KINDS
@@ -1199,6 +1285,17 @@ def validate_state(
                 raise StateError(
                     f"formal image {artifact_id} must directly depend on all current required G0/G1 decisions"
                 )
+        if is_v54:
+            # Formal images bind one exact execution-scribe generation request.
+            for artifact_id, artifact in formal_artifacts.items():
+                required = required_g0 | required_g1
+                matching_requests = {
+                    request_id for request_id in set(artifact["depends_on"]).intersection(generation_requests)
+                    if valid_artifacts[request_id]["decision_fingerprint"] == artifact["decision_fingerprint"]
+                    and required <= set(valid_artifacts[request_id]["depends_on"])
+                }
+                if not matching_requests:
+                    raise StateError(f"formal image {artifact_id} lacks a bound generation_request")
         if workflow == "controlled":
             if not valid_releases:
                 raise StateError("controlled fidelity/reuse formal image requires an effective asset_triad_release")
@@ -1364,6 +1461,8 @@ def validate_state(
         "generation_route": route,
         "review_mode": review,
         "minimum_workflow": floor,
+        "production_profile": production_profile,
+        "client_acceptance": client_acceptance,
         "required_pre_generation_gates": required_pre,
         "approved_pre_generation_gates": approved_pre,
         "frontstage": frontstage,

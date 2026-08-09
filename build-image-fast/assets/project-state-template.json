@@ -1,5 +1,5 @@
 {
-  "schema_version": "5.3",
+  "schema_version": "5.4",
   "project_id": "replace-me",
   "state_revision": 1,
   "status": "blocked",
@@ -7,6 +7,16 @@
   "workflow_mode": "controlled",
   "generation_route": "stable",
   "review_mode": "adaptive",
+  "production_profile": {
+    "profile": "balanced",
+    "selected_by": "agent_recommendation",
+    "recommended_agent_model": "gpt-5.6-terra",
+    "recommended_reasoning_effort": "medium",
+    "recommended_generation_route": "stable",
+    "active_agent_model": "",
+    "active_reasoning_effort": "",
+    "active_runtime_verified": false
+  },
   "risk_modules": {
     "semantic_lock": {"level": "medium", "status": "resolved", "evidence": ["DEC-G0-CREATIVE"]},
     "fidelity_lock": {"level": "hard", "status": "unresolved", "evidence": ["DEC-G1-ASSET"]},
@@ -50,6 +60,11 @@
     "remaining_confirmations": 1
   },
   "standing_authorization": {
+  "client_acceptance": {
+    "status": "not_requested",
+    "event_id": "",
+    "handoff_archive_artifact_id": ""
+  },
     "generate_one_candidate": true,
     "max_candidates": 1,
     "external_publish": false,

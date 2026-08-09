@@ -996,5 +996,122 @@ class ProjectStateTests(unittest.TestCase):
                 load_and_validate_state(clean_path)
 
 
+    # V5.4 tests remain in ProjectStateTests; module entry point follows the class.
+    # Keep this comment indented so the following test method remains part of the class.
+    def test_v54_requires_generation_request_and_final_acceptance_archive(self) -> None:
+        state = v54_direct_delivery_state()
+        state["schema_version"] = "5.4"
+        state["status"] = "delivered_pending_acceptance"
+        state["frontstage"] = {
+            "current_stage": "delivery", "completed_this_round": "automatic G2 passed",
+            "pending_user_decision": "final acceptance", "next_action": "wait for client",
+            "after_confirmation": "create handoff archive", "remaining_confirmations": 0,
+        }
+        state["production_profile"] = {
+            "profile": "balanced",
+            "selected_by": "agent_recommendation",
+            "recommended_agent_model": "gpt-5.6-terra",
+            "recommended_reasoning_effort": "medium",
+            "recommended_generation_route": "stable",
+            "active_agent_model": "",
+            "active_reasoning_effort": "",
+            "active_runtime_verified": False,
+        }
+        state["client_acceptance"] = {
+            "status": "pending", "event_id": "", "handoff_archive_artifact_id": "",
+        }
+        formal = next(item for item in state["artifacts"] if item["id"] == "ART-FORMAL")
+        request_dependencies = [record_id for record_id in formal["depends_on"] if record_id.startswith("DEC-")]
+        request = artifact(
+            "ART-REQUEST", "role_deliverable", decision_fingerprint=formal["decision_fingerprint"],
+            depends_on=request_dependencies,
+            dependency_fingerprints=_entity_fingerprints(state, request_dependencies),
+            fingerprint="7" * 64, role="execution_scribe", deliverable_type="generation_request",
+            self_check={"result": "pass", "summary": "exact prompt payload recorded"},
+        )
+        state["artifacts"].append(request)
+        mark_valid(state, "artifacts", request["id"])
+        formal["depends_on"].append(request["id"])
+        formal["dependency_fingerprints"][request["id"]] = request["fingerprint"]
+        self.assertTrue(validate_state(state)["valid"])
+
+        unbound = copy.deepcopy(state)
+        bad_formal = next(item for item in unbound["artifacts"] if item["id"] == "ART-FORMAL")
+        bad_formal["depends_on"].remove("ART-REQUEST")
+        bad_formal["dependency_fingerprints"].pop("ART-REQUEST")
+        self.assert_invalid(unbound, "lacks a bound generation_request")
+
+        g2 = next(item for item in state["confirmation_history"] if item["id"] == "CONF-G2")
+        acceptance = {
+            "id": "CONF-CLIENT-ACCEPT", "gate": "G2", "type": "user_confirmed", "actor": "user",
+            "recorded_at": "2026-08-09T12:00:00+08:00", "expected_revision": 4,
+            "decision_ids": [], "decision_fingerprints": [], "decision_record_fingerprints": [],
+            "artifact_ids": list(g2["artifact_ids"]),
+            "artifact_fingerprints": dict(g2["artifact_fingerprints"]),
+        }
+        state["confirmation_history"].append(acceptance)
+        mark_valid(state, "approval_events", acceptance["id"])
+        state["client_acceptance"].update(status="accepted", event_id=acceptance["id"])
+        state["state_revision"] = 6
+        self.assertTrue(validate_state(state)["valid"])
+
+        state["status"] = "completed"
+        self.assert_invalid(state, "requires a valid handoff archive")
+        archive_dependencies = list(acceptance["artifact_ids"])
+        archive = artifact(
+            "ART-ARCHIVE", "handoff_archive", decision_fingerprint=formal["decision_fingerprint"],
+            depends_on=archive_dependencies,
+            dependency_fingerprints=_entity_fingerprints(state, archive_dependencies),
+            approval_event_id=acceptance["id"], fingerprint="8" * 64, lifecycle="delivered",
+        )
+        state["artifacts"].append(archive)
+        mark_valid(state, "artifacts", archive["id"])
+        state["client_acceptance"]["handoff_archive_artifact_id"] = archive["id"]
+        self.assertTrue(validate_state(state)["valid"])
+
+# The module entry point follows the reusable V5.4 fixture.
+# Keep helper construction available to package_handoff tests.
+def v54_direct_delivery_state() -> dict:
+    state = direct_state()
+    state.update(schema_version="5.4", state_revision=5, current_internal_stage=8, status="delivered_pending_acceptance", generation_route="stable")
+    state["frontstage"] = {
+        "current_stage": "delivery", "completed_this_round": "automatic G2 passed",
+        "pending_user_decision": "final acceptance", "next_action": "wait for client",
+        "after_confirmation": "create handoff archive", "remaining_confirmations": 0,
+    }
+    state["production_profile"] = {
+        "profile": "balanced", "selected_by": "agent_recommendation",
+        "recommended_agent_model": "gpt-5.6-terra", "recommended_reasoning_effort": "medium",
+        "recommended_generation_route": "fast", "active_agent_model": "",
+        "active_reasoning_effort": "", "active_runtime_verified": False,
+    }
+    state["client_acceptance"] = {"status": "pending", "event_id": "", "handoff_archive_artifact_id": ""}
+    formal = artifact("ART-FORMAL", "formal_image", fingerprint="4" * 64, lifecycle="delivered")
+    qa = artifact(
+        "ART-QA", "qa_report", depends_on=[formal["id"]],
+        dependency_fingerprints={formal["id"]: formal["fingerprint"]}, fingerprint="5" * 64,
+        lifecycle="delivered", qa_score=91, hard_failures=[],
+    )
+    pack = artifact(
+        "ART-PACK", "build_pack", depends_on=[formal["id"], qa["id"]],
+        dependency_fingerprints={formal["id"]: formal["fingerprint"], qa["id"]: qa["fingerprint"]},
+        fingerprint="6" * 64, lifecycle="delivered",
+    )
+    state["artifacts"] = [formal, qa, pack]
+    for item in state["artifacts"]:
+        mark_valid(state, "artifacts", item["id"])
+    event = {
+        "id": "CONF-G2", "gate": "G2", "type": "system_validation", "actor": "qa_system",
+        "recorded_at": "2026-08-09T10:10:00+08:00", "expected_revision": 3,
+        "decision_ids": [], "decision_fingerprints": [], "decision_record_fingerprints": [],
+        "artifact_ids": [formal["id"], qa["id"], pack["id"]],
+        "artifact_fingerprints": {formal["id"]: formal["fingerprint"], qa["id"]: qa["fingerprint"], pack["id"]: pack["fingerprint"]},
+    }
+    state["confirmation_history"] = [event]
+    mark_valid(state, "approval_events", event["id"])
+    state["gates"]["G2"].update(status="delivered", approval_event_id=event["id"])
+    return state
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

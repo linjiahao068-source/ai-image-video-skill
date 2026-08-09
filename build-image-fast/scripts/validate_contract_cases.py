@@ -1040,10 +1040,10 @@ def validate_fixture(data: Any) -> list[str]:
 
     if data.get("skill") != "build-image-fast":
         errors.append("root.skill: expected 'build-image-fast'")
-    if data.get("version") != "5.3.0":
-        errors.append("root.version: expected '5.3.0'")
-    if data.get("fixture_schema_version") != "2.3.0":
-        errors.append("root.fixture_schema_version: expected '2.3.0'")
+    if data.get("version") != "5.4.0":
+        errors.append("root.version: expected '5.4.0'")
+    if data.get("fixture_schema_version") != "2.4.0":
+        errors.append("root.fixture_schema_version: expected '2.4.0'")
     if not is_nonempty_string(data.get("scope")):
         errors.append("root.scope: expected a non-empty string")
     if not is_nonempty_string(data.get("notes")):
