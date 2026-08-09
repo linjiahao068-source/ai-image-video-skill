@@ -1098,9 +1098,6 @@ class ProjectStateTests(unittest.TestCase):
             with self.assertRaisesRegex(StateError, "SHA-256 does not match"):
                 load_and_validate_state(clean_path)
 
-
-    # V5.4 tests remain in ProjectStateTests; module entry point follows the class.
-
     def test_v52_display_and_exact_text_contract_is_valid_before_formal_generation(self) -> None:
         report = validate_state(v52_text_state())
         self.assertFalse(report["migration_required"])
@@ -1147,7 +1144,7 @@ class ProjectStateTests(unittest.TestCase):
         refresh_v53_dependency_chain(state)
         with self.assertRaisesRegex(StateError, "typography_profile"):
             validate_state(state)
-    # Keep this comment indented so the following test method remains part of the class.
+
     def test_v54_requires_generation_request_and_final_acceptance_archive(self) -> None:
         state = v54_direct_delivery_state()
         state["schema_version"] = "5.4"
