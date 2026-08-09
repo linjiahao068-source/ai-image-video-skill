@@ -87,7 +87,7 @@ description: "把抽象创意交给一个可恢复的图片制作总编 Agent，
 
 ### 1. 需求、边界与选路
 
-图片总编收集用途、平台、受众、比例、语言、精确文字、角色/产品、素材职责、质量、授权与发布范围。先用已有信息推断；只有缺口会触发硬阻断或改变可见结果时，集中补问一次且不超过三项。输出 `brief-v0.x`、风险模块、工作流推荐、权利状态和内部审核。读取 [Creative Brief](references/idea-to-creative-brief.md) 与 [权利门](references/rights-and-release-gates.md)。
+图片总编收集用途、平台、受众、比例、语言、精确文字、角色/产品、素材职责、质量、授权与发布范围。先用已有信息推断；只有缺口会触发硬阻断或改变可见结果时，集中补问一次且不超过三项。输出 `brief-v0.x`、风险模块、工作流推荐、权利状态和内部审核。读取含权利与发布门的 [Creative Brief](references/idea-to-creative-brief.md)。
 
 ### 2. 创意方向
 
@@ -97,7 +97,7 @@ description: "把抽象创意交给一个可恢复的图片制作总编 Agent，
 
 先验证内容再处理视觉。漫画定义逐格事件、对白、节奏和反转；海报定义标题、主体、卖点、CTA 和留白；信息图定义层级、关系、数据和标注；产品图定义产品、卖点、情境和品牌信息。
 
-漫画或重复角色读取 [角色一致性与资产板](references/character-fidelity-and-asset-boards.md) 和 [漫画与序列图片](references/comics-and-sequential-images.md)，输出 `content-pack-v0.x`、`character-contract-v0.x` 与 `role-matrix-v0.x`。含可见文字、标签、标牌或数据 UI 时，同时读取 [显示合同与实际轮廓](references/display-contract-and-geometry.md)，交付 `display-contract-v0.x` 并把 `display_semantics` 与 `exact_text` 纳入 G0；发现冲突先返工，不把冲突选项伪装成已确认方案。
+漫画或重复角色读取含序列图片规则的 [角色一致性与资产板](references/character-fidelity-and-asset-boards.md)，输出 `content-pack-v0.x`、`character-contract-v0.x` 与 `role-matrix-v0.x`。含可见文字、标签、标牌或数据 UI 时，同时读取 [显示合同与实际轮廓](references/display-contract-and-geometry.md)，交付 `display-contract-v0.x` 并把 `display_semantics` 与 `exact_text` 纳入 G0；发现冲突先返工，不把冲突选项伪装成已确认方案。
 
 ### 4. 视觉规格与锚点
 
@@ -109,7 +109,7 @@ description: "把抽象创意交给一个可恢复的图片制作总编 Agent，
 
 执行场记读取有效上游字段，分别选择 `workflow_mode` 与 `generation_route`，再用 `capability-cost-fit` 区分草稿和精修。静态提示词使用：`[主体与身份锚点] + [动作/表情/状态] + [场景与对象关系] + [构图/视角/版式] + [风格/媒介] + [文字与技术约束]`。
 
-输出 `prompt-route-v0.x`、`prompt-pack-v0.x` 和 `prompt-change-log`。提示词和普通参数默认内部审核，不单独请求确认；只有提示词暴露出新的语义、权利、成本或不可逆取舍时，重开对应 G0/G1。读取 [路线选择](references/route-selection.md)、[阅读性与排字](references/readability-and-lettering.md)；需要精确 CLI/API 时再读 [GPT Image 2 操作](references/gpt-image-2-operation.md)。
+输出 `prompt-route-v0.x`、`prompt-pack-v0.x` 和 `prompt-change-log`。提示词和普通参数默认内部审核，不单独请求确认；只有提示词暴露出新的语义、权利、成本或不可逆取舍时，重开对应 G0/G1。读取含精确 CLI/API 边界的 [路线选择](references/route-selection.md) 与 [显示合同、实际轮廓及排字](references/display-contract-and-geometry.md)。
 
 ### 6. 生成、资产与候选
 
@@ -146,7 +146,7 @@ description: "把抽象创意交给一个可恢复的图片制作总编 Agent，
 
 美术指导在 G1 前交付独立的 typography-contract-v0.x.json，只定义字体权利/哈希、字重、层级、对齐、行距、最小字号和最小视觉占位；无字底图后再用实际轮廓合同锁定行组与光学偏移。执行场记只按两份合同生成无字底图和确定性文字，不得缩字、改字、换字体或补空白 UI。图片总编将字体、字号、行组、居中、占位与裁切证据纳入独立 G2；任一失败均为硬失败。
 
-standard 是普通文字项目的默认 profile，不启用上述漫画化规则。V5.2 项目保持可读和可交付；仅新建或主动采用该模式的项目使用 V5.3 状态。详见[漫画展示排字合同](references/comic-display-typography.md)。
+standard 是普通文字项目的默认 profile，不启用上述漫画化规则。V5.2 项目保持可读和可交付；仅新建或主动采用该模式的项目使用 V5.3 状态。详见[显示合同、实际轮廓与确定性排字](references/display-contract-and-geometry.md)。
 
 ## V5.4???????????????
 
