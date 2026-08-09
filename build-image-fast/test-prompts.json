@@ -1,7 +1,7 @@
 {
   "skill": "build-image-fast",
-  "version": "5.3.0",
-  "fixture_schema_version": "2.3.0",
+  "version": "5.4.0",
+  "fixture_schema_version": "2.4.0",
   "scope": "V5 0/1/2 拍板模式、单一团队前台、G0/G1/G2、standing authorization、provenance、字段级有效性、asset release、漫画显示合同与自动 QA 交付合同",
   "test_cases": [
     {

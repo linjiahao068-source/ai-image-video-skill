@@ -24,10 +24,11 @@ from validate_project_state import (
 )
 
 
-V5_SCHEMA_VERSION = "5.3"
+V5_SCHEMA_VERSION = "5.4"
+V53_SCHEMA_VERSION = "5.3"
 V52_SCHEMA_VERSION = "5.2"
 V51_SCHEMA_VERSION = "5.1"
-V5_SCHEMA_VERSIONS = {"5.0", V51_SCHEMA_VERSION, V52_SCHEMA_VERSION, V5_SCHEMA_VERSION}
+V5_SCHEMA_VERSIONS = {"5.0", V51_SCHEMA_VERSION, V52_SCHEMA_VERSION, V53_SCHEMA_VERSION, V5_SCHEMA_VERSION}
 HARD_MAX_CLEAN_SLOTS = 8
 HARD_MAX_CLEAN_PRIMARY_ROLES = 2
 HARD_MIN_CLEAN_TILE_SHORT_SIDE = 384
@@ -303,7 +304,7 @@ def validate_manifest(manifest: dict[str, Any], manifest_path: Path) -> dict[str
     normalized: dict[str, Image.Image] = {}
     asset_report: list[dict[str, Any]] = []
     registry_eligible = build_mode == "release" and is_v5
-    is_v51 = schema_version in {V51_SCHEMA_VERSION, V52_SCHEMA_VERSION, V5_SCHEMA_VERSION}
+    is_v51 = schema_version in {V51_SCHEMA_VERSION, V52_SCHEMA_VERSION, V53_SCHEMA_VERSION, V5_SCHEMA_VERSION}
 
     for index, raw_asset in enumerate(raw_assets):
         context = f"assets[{index}]"

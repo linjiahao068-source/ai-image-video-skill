@@ -1,0 +1,30 @@
+{
+  "schema_version": "1.0",
+  "project_id": "replace-me",
+  "version": "v0.1",
+  "prompt_pack_ref": "working/prompt-pack-v0.1.md",
+  "compiled_prompt": "replace-with-the-exact-prompt-sent-to-the-image-tool",
+  "negative_or_avoid": ["replace-with-avoid-constraint"],
+  "image_parameters": {
+    "size": "replace-me",
+    "quality_or_route": "stable",
+    "candidate_count": 1
+  },
+  "clean_reference_inputs": [
+    {
+      "file": "assets/approved/project-asset-reference-clean-v01.png",
+      "sha256": "",
+      "role": "character_identity"
+    }
+  ],
+  "contract_fingerprints": {
+    "visual_bible": "",
+    "asset_plan": "",
+    "prompt_pack": ""
+  },
+  "output_intent": {
+    "deliverable_slot_id": "page-01",
+    "candidate_set_id": "CAND-01"
+  },
+  "execution_truth": "This file is the exact pre-call payload. generation-log must copy its prompt, parameters and reference hashes without substitution."
+}
