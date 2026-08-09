@@ -133,10 +133,6 @@ def resolve_input_path(raw: str, relative_to: Path) -> Path:
     return candidate.resolve()
 
 
-def resolve_asset_path(raw: str, manifest_path: Path) -> Path:
-    return resolve_input_path(raw, manifest_path.parent)
-
-
 def load_font(explicit: Path | None, size: int) -> tuple[ImageFont.FreeTypeFont, str]:
     candidates = [explicit] if explicit else [Path(item) for item in DEFAULT_FONT_CANDIDATES]
     for candidate in candidates:
@@ -338,7 +334,7 @@ def validate_manifest(manifest: dict[str, Any], manifest_path: Path) -> dict[str
             raise BuildError(f"release contains unapproved asset {asset_id}: {status}")
         if status != "approved":
             registry_eligible = False
-        path = resolve_asset_path(str(asset["file"]), manifest_path)
+        path = resolve_input_path(str(asset["file"]), manifest_path.parent)
         if not path.is_file():
             raise BuildError(f"asset file not found: {asset_id}: {path}")
         actual_sha = sha256_file(path)

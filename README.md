@@ -139,24 +139,12 @@ G0 使用现有 `asset-plan` 把每项资产标为 `required / optional / skippe
 
 ## 本地验证
 
-合同测试不会调用图片模型。以 Windows PowerShell 为例：
+合同测试不会调用图片模型。当前验证命令、覆盖范围与未验证边界见 [build-image-fast/test-results.md](./build-image-fast/test-results.md)。
 
-```powershell
-cd "C:\\Users\\老大哥柚子\\Documents\\AI视频SKILL 2\\ai-图片&视频-skill\\build-image-fast"
+补充材料：
 
-$py = "$env:USERPROFILE\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe"
-& $py -m unittest discover -s scripts -p 'test_*.py' -v
-& $py scripts\\validate_contract_cases.py test-prompts.json
-```
-
-当前 V5.4 回归覆盖 61 个单元测试与 85 条合同夹具。更多验证入口：
-
-- [verified.md](./verified.md)：仓库级已验证范围与未验证边界；
 - [build-image-fast/test-prompts.json](./build-image-fast/test-prompts.json)：合同测试夹具；
-- [build-image-fast/test-results.md](./build-image-fast/test-results.md)：历史测试记录与限制；
 - [build-image-fast/references](./build-image-fast/references)：工作流、资产、显示合同与 QA 规范。
-
-通过合同测试不等于已经验证真实出图质量、中文逐字成图、角色相似度或一次生成成功率。真实生成与视觉验收必须在获得相应授权后单独执行并记录。
 
 ## 发布与许可边界
 

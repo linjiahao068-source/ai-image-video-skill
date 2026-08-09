@@ -6,16 +6,18 @@ from __future__ import annotations
 import copy
 import hashlib
 import json
-import os
 import subprocess
 import sys
 import tempfile
 import unittest
+from contextlib import redirect_stderr, redirect_stdout
+from io import StringIO
 from pathlib import Path
+from unittest.mock import patch
 
 from PIL import Image
 
-from assemble_asset_board import BuildError, validate_v51_asset_coverage
+from assemble_asset_board import BuildError, main as assemble_asset_board_main, validate_v51_asset_coverage
 from test_validate_project_state import artifact, bind_decision_dependencies, canonical_fingerprint, controlled_state, mark_valid, refresh_decision_record, refresh_fingerprint_bindings
 
 
@@ -38,6 +40,15 @@ class AssetBoardAssemblerTests(unittest.TestCase):
         cls.font = next((item for item in FONT_CANDIDATES if item.is_file()), None)
         if cls.font is None:
             raise unittest.SkipTest("No CJK font is installed for assembler tests")
+        smoke = subprocess.run(
+            [sys.executable, str(SCRIPT), "--help"],
+            text=True,
+            encoding="utf-8",
+            capture_output=True,
+            check=False,
+        )
+        if smoke.returncode != 0:
+            raise AssertionError(smoke.stderr)
 
     def setUp(self) -> None:
         self.temp = tempfile.TemporaryDirectory(prefix="asset-board-v5-test-")
@@ -196,8 +207,7 @@ class AssetBoardAssemblerTests(unittest.TestCase):
         manifest_path.write_text(
             json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
         )
-        command = [
-            sys.executable,
+        arguments = [
             str(SCRIPT),
             "--manifest",
             str(manifest_path),
@@ -205,20 +215,20 @@ class AssetBoardAssemblerTests(unittest.TestCase):
             str(out_dir),
         ]
         if bind_state:
-            command.extend(["--workflow-state", str(self.state_path)])
+            arguments.extend(["--workflow-state", str(self.state_path)])
         if baseline is not None:
-            command.extend(["--baseline-report", str(baseline)])
+            arguments.extend(["--baseline-report", str(baseline)])
         if font is not None:
-            command.extend(["--font", str(font)])
-        environment = os.environ.copy()
-        environment["PYTHONUTF8"] = "1"
-        return subprocess.run(
-            command,
-            text=True,
-            encoding="utf-8",
-            capture_output=True,
-            check=False,
-            env=environment,
+            arguments.extend(["--font", str(font)])
+        stdout, stderr = StringIO(), StringIO()
+        with patch.object(sys, "argv", arguments), redirect_stdout(stdout), redirect_stderr(stderr):
+            try:
+                returncode = assemble_asset_board_main()
+            except BuildError as exc:
+                print(f"asset-board build failed: {exc}", file=sys.stderr)
+                returncode = 2
+        return subprocess.CompletedProcess(
+            arguments, returncode, stdout.getvalue(), stderr.getvalue()
         )
 
     def build_candidate(self, assets: list[dict] | None = None) -> tuple[dict, Path]:

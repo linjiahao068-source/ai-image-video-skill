@@ -77,8 +77,7 @@
 
 ## 验证入口
 
-- [verified.md](./verified.md)：仓库级验证范围与未验证边界
 - [build-image-fast/test-prompts.json](./build-image-fast/test-prompts.json)：V5 合同 fixture
 - [build-image-fast/scripts/validate_contract_cases.py](./build-image-fast/scripts/validate_contract_cases.py)：fixture schema/一致性验证器
-- [build-image-fast/test-results.md](./build-image-fast/test-results.md)：历史验证与 V5 实际运行记录
+- [build-image-fast/test-results.md](./build-image-fast/test-results.md)：当前验证命令、覆盖范围与未验证边界
 - 各原子 Skill 的 test-prompts.json 与 test-results.md：原有 66 条测试
