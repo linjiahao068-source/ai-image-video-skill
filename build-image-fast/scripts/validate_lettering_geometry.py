@@ -86,10 +86,6 @@ def exact_elements(contract: dict[str, Any]) -> dict[str, dict[str, Any]]:
     return result
 
 
-def merge_masks(left: Image.Image, right: Image.Image) -> Image.Image:
-    return Image.frombytes("L", left.size, bytes(max(a, b) for a, b in zip(pixels(left), pixels(right))))
-
-
 def typography_issues(
     element: dict[str, Any],
     region: dict[str, Any],
@@ -195,7 +191,7 @@ def validate(args: argparse.Namespace) -> tuple[dict[str, Any], int]:
                     issue.append("glyph mask exceeds safe polygon")
             except ValidationError as exc:
                 issue.append(str(exc))
-            union = merge_masks(union, mask)
+            union = ImageChops.lighter(union, mask)
         type_issue = typography_issues(element, region, entry, typography) if entry and region and comic and typography else []
         issue.extend(type_issue)
         checks.append({"element_id": identifier, "passed": not issue, "outside_pixels": outside, "issues": issue})

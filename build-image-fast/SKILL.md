@@ -59,7 +59,7 @@ description: "把抽象创意交给一个可恢复的图片制作总编 Agent，
 
 ## 项目状态与恢复
 
-有可写工作区时，以 `project-state.json` 为机器可读状态真源，`project-state.md` 为用户摘要。状态至少维护：
+有可写工作区时，以 `project-state.json` 为唯一状态真源；用户摘要从当前状态按需生成，不持久化第二份状态。状态至少维护：
 
 - workflow、generation route、risk modules、G0/G1/G2、当前内部阶段；
 - execution mode、当前用户侧负责人、团队介绍是否显示；

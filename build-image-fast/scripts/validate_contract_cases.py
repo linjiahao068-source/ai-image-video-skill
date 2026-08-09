@@ -1028,7 +1028,6 @@ def validate_fixture(data: Any) -> list[str]:
         "fixture_schema_version",
         "scope",
         "test_cases",
-        "minimum_pass_rate",
         "notes",
     }
     missing = required_root - set(data)
@@ -1042,16 +1041,12 @@ def validate_fixture(data: Any) -> list[str]:
         errors.append("root.skill: expected 'build-image-fast'")
     if data.get("version") != "5.4.0":
         errors.append("root.version: expected '5.4.0'")
-    if data.get("fixture_schema_version") != "2.4.0":
-        errors.append("root.fixture_schema_version: expected '2.4.0'")
+    if data.get("fixture_schema_version") != "3.0.0":
+        errors.append("root.fixture_schema_version: expected '3.0.0'")
     if not is_nonempty_string(data.get("scope")):
         errors.append("root.scope: expected a non-empty string")
     if not is_nonempty_string(data.get("notes")):
         errors.append("root.notes: expected a non-empty string")
-
-    pass_rate = data.get("minimum_pass_rate")
-    if not isinstance(pass_rate, (int, float)) or isinstance(pass_rate, bool) or not 0 <= pass_rate <= 1:
-        errors.append("root.minimum_pass_rate: expected a number from 0 to 1")
 
     test_cases = data.get("test_cases")
     if not isinstance(test_cases, list) or not test_cases:
