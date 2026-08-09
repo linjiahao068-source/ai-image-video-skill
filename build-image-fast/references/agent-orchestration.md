@@ -129,7 +129,6 @@
 ```text
 <project_id>/
   project-state.json
-  project-state.md
   inputs/
   working/
     brief-v0.x.md
@@ -141,10 +140,7 @@
     asset-board-spec-v0.x.md
     asset-manifest-v0.x.json
     prompt-pack-v0.x.md
-  reviews/
-    stage-01-review-v0.x.md
   assets/
-    registry.md
     approved/
   outputs/
     candidates/
@@ -152,9 +148,9 @@
   AI-Image-Build-Pack.md
 ```
 
-只创建任务需要的文件。每次变化按“产物 → 角色自检 → 主审核 → `project-state.json` → `project-state.md` 摘要”提交。收到“继续”时先验证 JSON 状态、revision 和文件指纹；缺少真源时从现有证据重建为待验证状态，不从聊天猜测，也不重复团队介绍。
+只创建任务需要的文件。每次变化按“产物 → 角色自检 → 主审核 → `project-state.json`”提交；用户摘要按需从当前 JSON 生成。收到“继续”时先验证 JSON 状态、revision 和文件指纹；缺少真源时从现有证据重建为待验证状态，不从聊天猜测，也不重复团队介绍。
 
-只有当前有效、权利匹配且有批准事件的资产才能进入 `assets/registry.md`。源资产、标签、合同、权利或哈希变化时只失效其依赖节点；依赖不明才扩大到相关整组。
+只有当前有效、权利匹配且有批准事件的资产才能在 `project-state.json` 中登记为当前 release，并进入 `assets/approved/`。源资产、标签、合同、权利或哈希变化时只失效其依赖节点；依赖不明才扩大到相关整组。
 
 ## V5.2 显示与排字交接
 

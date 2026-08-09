@@ -11,7 +11,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageChops, ImageDraw, ImageFont
 
 from typography_contract import TypographyContractError, load_typography_contract, locked_lines
 
@@ -54,10 +54,6 @@ def object_value(value: Any, context: str) -> dict[str, Any]:
 
 def pixels(image: Image.Image):
     return image.get_flattened_data() if hasattr(image, "get_flattened_data") else image.getdata()
-
-
-def merge_masks(left: Image.Image, right: Image.Image) -> Image.Image:
-    return Image.frombytes("L", left.size, bytes(max(a, b) for a, b in zip(pixels(left), pixels(right))))
 
 
 def polygon_mask(size: tuple[int, int], points: Any, context: str) -> Image.Image:
@@ -350,7 +346,7 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
         except ValueError as exc:
             raise LetteringError(f"elements.{identifier}.color is invalid") from exc
         layer.alpha_composite(Image.composite(color, Image.new("RGBA", base.size), mask))
-        union = merge_masks(union, mask)
+        union = ImageChops.lighter(union, mask)
         mask_file = (args.mask_dir / f"{re.sub(r'[^A-Za-z0-9_.-]+', '_', identifier)}.png").resolve()
         mask.save(mask_file)
         entry["mask_file"], entry["mask_sha256"] = str(mask_file), sha256(mask_file)
